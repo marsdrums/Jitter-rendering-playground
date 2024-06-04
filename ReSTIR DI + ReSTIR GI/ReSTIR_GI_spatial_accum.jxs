@@ -151,7 +151,7 @@ void main() {
 	spatial_reservoir = updateReservoir(spatial_reservoir, ss, s, reservoir.z*reservoir.w*p_hat, 1, seed);
 
 	float radius = 30;
-	for(int i = 0; i < 3; i++){
+	for(int i = 0; i < 8; i++){
 
 		float randAngle = RandomFloat01(seed) * TWOPI;
 		float randRadius = RandomFloat01(seed);
