@@ -1,0 +1,218 @@
+<jittershader name="primaryRays">
+	<description>Computes primary visibility casting rays from the viewport</description>
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="viewPort" type="vec2" state="VIEWPORT" />
+	<param name="eye" type="vec3" state="CAMERA_POSITION" />
+	<param name="invV" type="mat4" state="VIEW_MATRIX" transform="INVERSE" />
+	<param name="farCorner" type="vec3" state="FAR_CORNER" />
+	<param name="objTex" type="int" default="0" />
+	<param name="objNum" type="vec2" state="TEXDIM0" />
+	<language name="glsl" version="1.5">
+		<bind param="pos" program="vp" />
+		<bind param="MVP" program="vp" />
+		<bind param="viewPort" program="vp" />
+		<bind param="eye" program="fp" />
+		<bind param="invV" program="vp" />
+		<bind param="farCorner" program="vp" />
+		<bind param="objTex" program="fp" />
+		<bind param="objNum" program="fp" />
+		<program name="vp" type="vertex">
+<![CDATA[
+#version 330 core
+in vec3 pos;
+uniform mat4 MVP, invV;
+uniform vec3 farCorner;
+uniform vec2 viewPort;
+
+out jit_PerVertex {
+	smooth vec2 uv;	
+	smooth vec3 rd;
+	flat float rdNormalizer;
+} jit_out;
+
+void main() {	
+
+	jit_out.rd = (invV * vec4(farCorner*vec3(pos.xy, 1), 1)).xyz;
+	jit_out.rdNormalizer = 1 / length(farCorner);
+	gl_Position = vec4(pos, 1.);	
+	jit_out.uv = pos.xy;//vec2(pos.x*viewPort.x / viewPort.y, pos.y);
+}
+]]>
+		</program>
+		<program name="fp" type="fragment">
+<![CDATA[
+#version 330 core
+#define FAR 100000
+#define BACKGROUND vec3(0)
+
+uniform vec3 eye;
+uniform sampler2DRect objTex;
+uniform vec2 objNum;
+
+in jit_PerVertex {
+	smooth vec2 uv;	
+	smooth vec3 rd;
+	flat float rdNormalizer;
+} jit_in;
+
+struct rayInfo{
+	vec3 o;
+	vec3 d;
+	vec3 invd;
+	vec3 invdtimeso;
+	vec3 absinvd;
+};
+
+struct hitInfo{
+	float tn; //enter distance
+	float tf; //exit distance
+	vec3 t1;
+	vec3 t2;
+	vec3 n; //normal
+	vec3 p; //position
+	vec3 c; //color
+	mat4 txi;
+	vec3 rdd;
+	vec3 roo;
+};
+
+struct objInfo{
+	vec3 p; //position
+	vec3 s; //scale
+	vec4 r; //rotation
+	vec3 c; //color
+	mat4 txx; 
+	mat4 txi;
+};
+
+struct bestInfo{
+	float tn; //enter distance
+	float tf; //exit distance
+	vec3 t1;
+	vec3 t2;
+	vec3 n; //normal
+	vec3 p; //position
+	vec3 c; //color
+	float i;
+	mat4 txi;
+	vec3 rdd;
+	vec3 roo;
+};
+
+out vec4 color[3];
+
+void get_ray_info(out rayInfo ray){
+	ray.o = eye;
+	ray.d = normalize(jit_in.rd);// * jit_in.rdNormalizer;
+	ray.invd = 1 / ray.d;
+	ray.invdtimeso = ray.invd * ray.o;
+	ray.absinvd = abs(ray.invd);
+}
+
+mat4 rotationAxisAngle( vec3 v, float angle )
+{
+    float s = sin( angle );
+    float c = cos( angle );
+    float ic = 1.0 - c;
+
+    return mat4( v.x*v.x*ic + c,     v.y*v.x*ic - s*v.z, v.z*v.x*ic + s*v.y, 0.0,
+                 v.x*v.y*ic + s*v.z, v.y*v.y*ic + c,     v.z*v.y*ic - s*v.x, 0.0,
+                 v.x*v.z*ic - s*v.y, v.y*v.z*ic + s*v.x, v.z*v.z*ic + c,     0.0,
+			     0.0,                0.0,                0.0,                1.0 );
+}
+
+mat4 translate( float x, float y, float z )
+{
+    return mat4( 1.0, 0.0, 0.0, 0.0,
+				 0.0, 1.0, 0.0, 0.0,
+				 0.0, 0.0, 1.0, 0.0,
+				 x,   y,   z,   1.0 );
+}
+
+
+// axis aligned box centered at the origin, with size boxSize
+bool box_intersection( in rayInfo ray, out hitInfo hit, in objInfo obj ) {
+    //vec3 n = ray.invd*ray.o;   // can precompute if traversing a set of aligned boxes
+    // convert from ray to box space
+	hit.rdd = (obj.txx*vec4(ray.d,0.0)).xyz;
+	hit.roo = (obj.txx*vec4(ray.o,1.0)).xyz;
+
+	// ray-box intersection in box space
+    vec3 m = 1.0/hit.rdd;
+    vec3 n = m*hit.roo;
+    vec3 k = abs(m)*obj.s;
+    hit.t1 = -n - k;
+    hit.t2 = -n + k;
+    hit.tn = max( max( hit.t1.x, hit.t1.y ), hit.t1.z );
+    hit.tf = min( min( hit.t2.x, hit.t2.y ), hit.t2.z );
+    hit.txi = obj.txi; //this could be better
+    return (hit.tn <= hit.tf) && (hit.tf >= 0.0);
+    //if( hit.tn > hit.tf || hit.tf < 0.0) return false; // no intersection
+    //return true;
+}
+
+void get_obj_info(out objInfo obj, in float i){
+	obj.p = texture(objTex, vec2(i, 0.5)).xyz;
+	obj.r = texture(objTex, vec2(i, 1.5));
+	obj.s = texture(objTex, vec2(i, 2.5)).xyz;
+
+    // rotate and translate box	
+	mat4 rot = rotationAxisAngle( normalize(obj.r.xyz), obj.r.w );
+	mat4 tra = translate( obj.p.x, obj.p.y, obj.p.z );
+	obj.txi = tra * rot; 
+	obj.txx = inverse( obj.txi );
+}
+
+void update_best(inout bestInfo bes, in hitInfo hit, in float i){
+	if(bes.tn < hit.tn) return;
+	bes.tn = hit.tn;
+	bes.tf = hit.tf;
+	bes.t1 = hit.t1;
+	bes.t2 = hit.t2;
+	bes.txi = hit.txi;
+	bes.rdd = hit.rdd;
+	bes.i = i;
+}
+
+void get_normal_position_color(inout bestInfo bes, in rayInfo ray){
+	if(bes.tn == FAR){
+		discard;//bes.c = BACKGROUND;
+		return;
+	}
+	bes.c = texture(objTex, vec2(bes.i, 3.5)).xyz;
+	bes.p = ray.o + ray.d*bes.tn;
+    bes.n = (bes.tn > 0.0) ?	step(vec3(bes.tn),bes.t1) : // ro ouside the box
+                           		step(bes.t2,vec3(bes.tf));  // ro inside the box
+    bes.n = (bes.txi * vec4(-sign(bes.rdd)*bes.n,0.0)).xyz;
+    //bes.n *= -sign(ray.d);
+}
+
+void ray_trace(in rayInfo ray, inout hitInfo hit, out bestInfo bes){
+
+	objInfo obj;
+
+	bes.tn = FAR;
+	for(float i = objNum.x-0.5; i >= 0.0; i-=1.0){
+		get_obj_info(obj, i);
+		if(box_intersection(ray, hit, obj)) update_best(bes, hit, i);
+	}
+	get_normal_position_color(bes, ray);
+}
+
+void main() {
+
+	rayInfo ray;
+	hitInfo hit;
+	bestInfo bes;
+
+	get_ray_info(ray);
+	ray_trace(ray, hit, bes);
+	color[0] = vec4(bes.p, 1);
+	color[1] = vec4(bes.n, 1);
+	color[2] = vec4(bes.c, 1);
+}	
+]]>
+		</program>
+	</language>
+</jittershader>

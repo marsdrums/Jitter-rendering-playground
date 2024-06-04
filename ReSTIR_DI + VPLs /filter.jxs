@@ -1,0 +1,156 @@
+<jittershader name="default">
+	<description>Default Slab </description>
+	<param name="colTex" type="int" default="0" filter="NEAREST" />
+	<param name="posTex" type="int" default="1" filter="NEAREST" />
+	<param name="norTex" type="int" default="2" filter="NEAREST" />
+	<param name="modelViewProjectionMatrix" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="position" type="vec3" state="POSITION" />
+	<param name="texcoord" type="vec2" state="TEXCOORD" />
+	<param name="texDim" type="vec2" state="TEXDIM0" />
+	<param name="c_phi" type="float" default="7.0" />
+	<param name="n_phi" type="float" default="0.002" />
+	<param name="p_phi" type="float" default="6.0" />
+	<param name="stepwidth" type="float" default="1" />
+	<language name="glsl" version="1.5">
+		<bind param="colTex" program="fp" />
+		<bind param="posTex" program="fp" />
+		<bind param="norTex" program="fp" />
+		<bind param="modelViewProjectionMatrix" program="vp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="textureMatrix0" program="fp" />
+		<bind param="position" program="vp" />
+		<bind param="texcoord" program="vp" />
+		<bind param="texDim" program="vp" />
+		<bind param="c_phi" program="fp" />
+		<bind param="n_phi" program="fp" />
+		<bind param="p_phi" program="fp" />
+		<bind param="stepwidth" program="fp" />
+		<program name="vp" type="vertex"  >
+<![CDATA[
+	#version 330 core
+	
+	in vec3 position;
+	in vec2 texcoord;
+	in vec4 color;
+	out jit_PerVertex {
+		smooth vec2 normUV;
+		smooth vec2 rectUV;
+		flat float inv_c_phi;
+		flat float inv_n_phi;
+		flat float inv_p_phi;
+		flat vec2 step;
+	} jit_out;
+	uniform mat4 modelViewProjectionMatrix;
+	uniform mat4 textureMatrix0;
+	uniform float c_phi, n_phi, p_phi;
+	uniform vec2 texDim;
+	
+	void main(void) {
+		gl_Position = modelViewProjectionMatrix*vec4(position, 1.);
+		jit_out.normUV = vec2(texcoord.x, 1 - texcoord.y);//vec2(textureMatrix0*vec4(texcoord, 0., 1.));
+		jit_out.rectUV = vec2(textureMatrix0*vec4(texcoord, 0., 1.));
+		jit_out.inv_c_phi = 1 / c_phi;
+		jit_out.inv_n_phi = 1 / n_phi;
+		jit_out.inv_p_phi = 1 / p_phi;
+		jit_out.step = vec2(1) / texDim;
+	}
+]]>
+</program>
+		
+<program name="fp" type="fragment"  >
+<![CDATA[
+	#version 330 core
+	
+	in jit_PerVertex {
+		smooth vec2 normUV;
+		smooth vec2 rectUV;
+		flat float inv_c_phi;
+		flat float inv_n_phi;
+		flat float inv_p_phi;
+		flat vec2 step;
+	} jit_in;
+	layout (location = 0) out vec4 outColor;
+
+uniform mat4 textureMatrix0;
+uniform sampler2D norTex, posTex; 
+uniform sampler2DRect colTex;
+uniform float stepwidth; 
+
+void main(void) {
+
+	const float kernel[25] = float[]	(	0.0625,	0.0625,	0.0625,	0.0625,	0.0625,
+											0.0625,	0.25,	0.25,	0.25,	0.0625,
+											0.0625,	0.25,	0.375,	0.25,	0.0625,
+											0.0625,	0.25,	0.25,	0.25,	0.0625,
+											0.0625,	0.0625,	0.0625,	0.0625,	0.0625);
+
+	const vec2 offset[25] = vec2[]	(	vec2(-2,-2),	vec2(-1,-2),	vec2(+0,-2),	vec2(+1,-2),	vec2(+2,-2),	
+										vec2(-2,-1),	vec2(-1,-1),	vec2(+0,-1),	vec2(+1,-1),	vec2(+2,-1),
+										vec2(-2,-0),	vec2(-1,-0),	vec2(+0,-0),	vec2(+1,-0),	vec2(+2,-0),
+										vec2(-2,+1),	vec2(-1,+1),	vec2(+0,+1),	vec2(+1,+1),	vec2(+2,+1),
+										vec2(-2,+1),	vec2(-1,+1),	vec2(+0,+1),	vec2(+1,+1),	vec2(+2,+1));
+
+	vec3 sum = vec3(0.0);
+	vec3 cval = texture(colTex, jit_in.rectUV).xyz; 
+	vec3 nval = texture(norTex, jit_in.normUV).xyz; 
+	vec3 pval = texture(posTex, jit_in.normUV).xyz;
+	float invstepwidth2 = 1/(stepwidth*stepwidth);
+
+	float cum_w = 0.0;
+	for(int i = 0; i < 25; i++) {
+		vec2 scaledOffset = offset[i]*stepwidth;
+		vec2 uv = jit_in.normUV + jit_in.step*scaledOffset;
+		vec3 ctmp = texture(colTex, jit_in.rectUV + scaledOffset*vec2(1,-1)).xyz; 
+		vec3 t = cval - ctmp;
+		float dist2 = dot(t,t);
+		float c_w = min(exp(-(dist2)*jit_in.inv_c_phi), 1.0);
+		vec3 ntmp = texture(norTex, uv).xyz;
+		t = nval - ntmp;
+		dist2 = max(dot(t,t)*invstepwidth2,0.0); 
+		float n_w = min(exp(-(dist2)*jit_in.inv_n_phi), 1.0);
+		vec3 ptmp = texture(posTex, uv).xyz;
+		t = pval - ptmp;
+		dist2 = dot(t,t);
+		float p_w = min(exp(-(dist2)*jit_in.inv_p_phi),1.0);
+		float weight = c_w * n_w * p_w * kernel[i];
+		sum += ctmp * weight; 
+		cum_w += weight;
+	}
+	outColor.rgb = sum/cum_w;
+	outColor.a = 1;
+
+/*
+	vec4 sum = vec4(0.0);
+	vec4 cval = texture(colTex, jit_in.rectUV); 
+	vec4 nval = texture(norTex, jit_in.normUV); 
+	vec4 pval = texture(posTex, jit_in.normUV);
+	float invstepwidth2 = 1/(stepwidth*stepwidth);
+
+	float cum_w = 0.0;
+	for(int i = 0; i < 25; i++) {
+		vec2 scaledOffset = offset[i]*stepwidth;
+		vec2 uv = jit_in.normUV + jit_in.step*scaledOffset;
+		vec4 ctmp = texture(colTex, jit_in.rectUV + scaledOffset*vec2(1,-1)); 
+		vec4 t = cval - ctmp;
+		float dist2 = dot(t,t);
+		float c_w = min(exp(-(dist2)*jit_in.inv_c_phi), 1.0);
+		vec4 ntmp = texture(norTex, uv);
+		t = nval - ntmp;
+		dist2 = max(dot(t,t)*invstepwidth2,0.0); 
+		float n_w = min(exp(-(dist2)*jit_in.inv_n_phi), 1.0);
+		vec4 ptmp = texture(posTex, uv);
+		t = pval - ptmp;
+		dist2 = dot(t,t);
+		float p_w = min(exp(-(dist2)*jit_in.inv_p_phi),1.0);
+		float weight = c_w * n_w * p_w * kernel[i];
+		sum += ctmp * weight; 
+		cum_w += weight;
+	}
+	outColor = sum/cum_w;
+*/
+}
+]]>
+</program>
+	</language>
+</jittershader>

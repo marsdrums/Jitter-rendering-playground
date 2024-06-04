@@ -1,0 +1,172 @@
+<jittershader name="fill-flat-quads">
+	<description>Default Shader </description>
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="reservoirTex" type="int" default="0" />
+	<param name="sampleTex0" type="int" default="1" />
+	<param name="sampleTex1" type="int" default="2" />
+	<param name="sampleTex2" type="int" default="3" />
+	<param name="reservoirTex_prev" type="int" default="4" />
+	<param name="sampleTex0_prev" type="int" default="5" />
+	<param name="sampleTex1_prev" type="int" default="6" />
+	<param name="sampleTex2_prev" type="int" default="7" />
+  	<param name="texDim" type="vec2" state="TEXDIM0" />
+ 	<param name="frame" type="int" state="FRAME" />
+ 	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+ 	<param name="prevMVP" type="mat4" state="PREV_MODELVIEW_PROJECTION_MATRIX" />
+	<language name="glsl" version="1.5">
+		<bind param="pos" program="vp" />
+		<bind param="reservoirTex" program="fp" />
+		<bind param="sampleTex0" program="fp" />
+		<bind param="sampleTex1" program="fp" />
+		<bind param="sampleTex2" program="fp" />
+		<bind param="reservoirTex_prev" program="fp" />
+		<bind param="sampleTex0_prev" program="fp" />
+		<bind param="sampleTex1_prev" program="fp" />
+		<bind param="sampleTex2_prev" program="fp" />
+		<bind param="objNum" program="fp" />
+		<bind param="texDim" program="vp" />
+		<bind param="frame" program="fp" />
+		<bind param="MVP" program="fp" />
+		<bind param="prevMVP" program="fp" />
+		<program name="vp" type="vertex">
+<![CDATA[
+#version 330 core
+in vec3 pos;
+uniform vec2 texDim;
+
+out jit_PerVertex {
+	smooth vec2 uv;	
+} jit_out;
+
+void main() {	
+	gl_Position = vec4(pos.xy,0,1);	
+	jit_out.uv = (pos.xy * vec2(0.5, -0.5) + 0.5)*texDim;
+}
+]]>
+		</program>
+		<program name="fp" type="fragment">
+<![CDATA[
+#version 330 core
+
+uniform sampler2DRect reservoirTex, sampleTex0, sampleTex1, sampleTex2, reservoirTex_prev, sampleTex0_prev, sampleTex1_prev, sampleTex2_prev;
+uniform int frame;
+uniform mat4 MVP, prevMVP;
+
+in jit_PerVertex {
+	smooth vec2 uv;	
+} jit_in;
+
+out vec4 color[4];
+
+uint wang_hash(inout uint seed){
+
+    seed = uint(seed ^ uint(61)) ^ uint(seed >> uint(16));
+    seed *= uint(9);
+    seed = seed ^ (seed >> 4);
+    seed *= uint(0x27d4eb2d);
+    seed = seed ^ (seed >> 15);
+    return seed;
+}
+ 
+float RandomFloat01(inout uint seed) { 
+	return float(wang_hash(seed)) / 4294967296.0; 
+}
+
+
+vec4 updateReservoir(vec4 reservoir, float slected_point, float weight, float c, inout uint seed)
+{
+	// Algorithm 2 of ReSTIR paper
+	reservoir.x = reservoir.x + weight; // r.w_sum
+	reservoir.z += c; // r.M
+	if (RandomFloat01(seed) < weight / reservoir.x) {
+		reservoir.y = slected_point; // r.y
+	}
+
+	return reservoir;
+}
+
+void main() {
+
+	vec4 lookup;
+	//vec4 reservoir = texture(reservoirTex, jit_in.uv);
+	vec3 Lo = texture(sampleTex0, jit_in.uv).rgb;
+	lookup = texture(sampleTex1, jit_in.uv);
+	vec3 s_p = lookup.xyz;
+	float cosine = lookup.w;
+	lookup = texture(sampleTex2, jit_in.uv);
+	vec3 s_n = lookup.xyz;
+	float pdf = lookup.w;
+
+	vec4 reservoir_prev = texture(reservoirTex_prev, jit_in.uv);
+	vec3 Lo_prev = texture(sampleTex0_prev, jit_in.uv).rgb;
+	lookup = texture(sampleTex1_prev, jit_in.uv);
+	vec3 s_p_prev = lookup.xyz;
+	float cosine_prev = lookup.w;
+	lookup = texture(sampleTex2_prev, jit_in.uv);
+	vec3 s_n_prev = lookup.xyz;
+	float pdf_prev = lookup.w;
+
+	uint seed = uint(jit_in.uv.x*3918) + uint(jit_in.uv.y*71192) + uint(9723*frame);
+  	
+  	int res0 = 0;
+    int res1 = 1;
+	vec4 reservoir = vec4(0);
+	float p_hat;
+
+    p_hat = length(Lo);
+    float w = p_hat / pdf;
+    reservoir = updateReservoir(reservoir, res0, w, 1, seed);
+	reservoir.w = p_hat == 0.0 ? 0.0 : reservoir.x / (reservoir.z * p_hat);
+  
+
+	//TEMPORAL REUSE//____________________________________________________________
+	vec4 temporal_reservoir = vec4(0);
+
+	// combine current reservoir
+	temporal_reservoir = updateReservoir(temporal_reservoir, res0, reservoir.z*reservoir.w*p_hat, 1, seed);
+	//temporal_reservoir.w = p_hat == 0.0 ? 0.0 : temporal_reservoir.x / (temporal_reservoir.z * p_hat);
+	
+	// combine previous reservoir
+	p_hat = length(Lo_prev);//*cosine_prev;//length(GetPointLightRadiance(int(prev_reservoir.y), pos, nor, alb));
+	//p_hat /= pdf_prev;
+	//p_hat /= pdf;
+	reservoir_prev.z = min(4*reservoir.z, reservoir_prev.z);
+	temporal_reservoir = updateReservoir(temporal_reservoir, res1, p_hat * reservoir_prev.w * reservoir_prev.z, reservoir_prev.z, seed);
+
+	// set M value
+	//temporal_reservoir.z = reservoir.z + reservoir_prev.z;
+
+	// set W value
+	if(temporal_reservoir.y == res0){
+		p_hat = length(Lo);//*cosine; //mettere in variabile
+		//p_hat /= pdf;
+	}
+
+	//if(p_hat > 0.0) temporal_reservoir.z += 1;
+	//p_hat /= pdf;
+	temporal_reservoir.w = p_hat > 0 ? (1 / max(p_hat, 0.0001)) * (temporal_reservoir.x / max(temporal_reservoir.z, 0.0001)) : 0.0;
+
+	// set current reservoir to the combined temporal reservoir
+	reservoir = temporal_reservoir;
+
+
+	if(reservoir.y == res1){
+		Lo = Lo_prev;
+		s_p = s_p_prev;
+		s_n = s_n_prev;
+		cosine = cosine_prev;
+		pdf = pdf_prev;
+	}
+
+	//___________________________________________________________________________________________________________________________________________________________
+
+	color[0] = reservoir;
+	color[1] = vec4(Lo, 0.0);
+	color[2] = vec4(s_p, cosine);
+	color[3] = vec4(s_n, pdf);
+
+}	
+]]>
+		</program>
+	</language>
+</jittershader>

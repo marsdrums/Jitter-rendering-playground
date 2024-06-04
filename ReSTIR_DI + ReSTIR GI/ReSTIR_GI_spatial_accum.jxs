@@ -1,0 +1,205 @@
+<jittershader name="fill-flat-quads">
+	<description>Default Shader </description>
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="posTex" type="int" default="0" />
+	<param name="norTex" type="int" default="1" />
+	<param name="reservoirTex" type="int" default="2" />
+	<param name="sampleTex0" type="int" default="3" />
+	<param name="sampleTex1" type="int" default="4" />
+	<param name="sampleTex2" type="int" default="5" />
+  	<param name="texDim" type="vec2" state="TEXDIM0" />
+ 	<param name="frame" type="int" state="FRAME" />
+	<language name="glsl" version="1.5">
+		<bind param="pos" program="vp" />
+		<bind param="posTex" program="fp" />
+		<bind param="norTex" program="fp" />
+		<bind param="reservoirTex" program="fp" />
+		<bind param="sampleTex0" program="fp" />
+		<bind param="sampleTex1" program="fp" />
+		<bind param="sampleTex2" program="fp" />
+		<bind param="objNum" program="fp" />
+		<bind param="texDim" program="vp" />
+		<bind param="texDim" program="fp" />
+		<bind param="frame" program="fp" />
+		<program name="vp" type="vertex">
+<![CDATA[
+#version 330 core
+in vec3 pos;
+uniform vec2 texDim;
+
+out jit_PerVertex {
+	smooth vec2 uv;	
+} jit_out;
+
+void main() {	
+	gl_Position = vec4(pos.xy,0,1);	
+	jit_out.uv = (pos.xy * vec2(0.5, -0.5) + 0.5)*texDim;
+}
+]]>
+		</program>
+		<program name="fp" type="fragment">
+<![CDATA[
+#version 330 core
+#define TWOPI 6.28318530718
+
+uniform sampler2DRect posTex, norTex, reservoirTex, sampleTex0, sampleTex1, sampleTex2;
+uniform int frame;
+uniform vec2 texDim;
+
+in jit_PerVertex {
+	smooth vec2 uv;	
+} jit_in;
+
+out vec4 color[4];
+
+struct sample{
+	vec3 Lo;
+	vec3 s_p;
+	vec3 s_n;
+	float cosine;
+	float pdf;
+};
+
+
+uint wang_hash(inout uint seed){
+
+    seed = uint(seed ^ uint(61)) ^ uint(seed >> uint(16));
+    seed *= uint(9);
+    seed = seed ^ (seed >> 4);
+    seed *= uint(0x27d4eb2d);
+    seed = seed ^ (seed >> 15);
+    return seed;
+}
+ 
+float RandomFloat01(inout uint seed) { 
+	return float(wang_hash(seed)) / 4294967296.0; 
+}
+
+vec4 initialReservoir(vec4 reservoir, float weight, float c, inout uint seed){
+	// Algorithm 2 of ReSTIR paper
+	reservoir.x = reservoir.x + weight; // r.w_sum
+	reservoir.z += c; // r.M
+	return reservoir;
+}
+
+vec4 updateReservoir(vec4 reservoir, inout sample s, inout sample sc, float weight, float c, inout uint seed)
+{
+	// Algorithm 2 of ReSTIR paper
+	reservoir.x = reservoir.x + weight; // r.w_sum
+	reservoir.z += c; // r.M
+	if (RandomFloat01(seed) < weight / reservoir.x) {
+		s.Lo = sc.Lo;
+		s.s_p = sc.s_p;
+		s.s_n = sc.s_n;
+		s.cosine = sc.cosine;
+		s.pdf = sc.pdf;
+		//s = sc;  // r.y
+	}
+
+	return reservoir;
+}
+
+void init_sample(inout sample s){
+
+	vec4 lookup;
+	s.Lo = texture(sampleTex0, jit_in.uv).rgb;
+	lookup = texture(sampleTex1, jit_in.uv);
+	s.s_p = lookup.xyz;
+	s.cosine = lookup.w;
+	lookup = texture(sampleTex2, jit_in.uv);
+	s.s_n = lookup.xyz;
+	s.pdf = lookup.w;
+}
+
+void candidate_sample(inout sample sc, vec2 uv){
+
+	vec4 lookup;
+	sc.Lo = texture(sampleTex0, uv).rgb;
+	lookup = texture(sampleTex1, uv);
+	sc.s_p = lookup.xyz;
+	sc.cosine = lookup.w;
+	lookup = texture(sampleTex2, uv);
+	sc.s_n = lookup.xyz;
+	sc.pdf = lookup.w;
+}
+
+void main() {
+
+	sample s;
+	sample sc;
+	sample ss;
+
+	init_sample(s);
+
+	vec3 nor = texture(norTex, jit_in.uv).xyz;
+
+	uint seed = uint(jit_in.uv.x*3952) + uint(jit_in.uv.y*39192) + uint(3123*frame);
+  	
+	vec4 reservoir = vec4(0);
+	float p_hat;
+
+    p_hat = length(s.Lo);
+    float w = p_hat / s.pdf;
+    reservoir = initialReservoir(reservoir, w, 1, seed);
+	reservoir.w = p_hat == 0.0 ? 0.0 : reservoir.x / (reservoir.z * p_hat);
+ 
+
+	//SPATIAL REUSE//____________________________________________________________
+	vec4 spatial_reservoir = vec4(0);
+
+	//add current reservoir;
+	spatial_reservoir = updateReservoir(spatial_reservoir, ss, s, reservoir.z*reservoir.w*p_hat, 1, seed);
+
+	float radius = 30;
+	for(int i = 0; i < 3; i++){
+
+		float randAngle = RandomFloat01(seed) * TWOPI;
+		float randRadius = RandomFloat01(seed);
+		vec2 offset = vec2(cos(randAngle), sin(randAngle))*sqrt(randRadius)*radius;
+
+		vec2 candidateUV = jit_in.uv + offset;
+
+		if(	candidateUV.x < 0 || 
+			candidateUV.y < 0 ||
+			candidateUV.x >= texDim.x || 
+			candidateUV.y >= texDim.y) continue;
+		
+		vec3 candidateNor = texture(norTex, candidateUV).xyz;
+
+		if(dot(nor, candidateNor) < 0.97) continue;
+
+		vec4 candidate_reservoir = texture(reservoirTex, candidateUV);
+		candidate_sample(sc, candidateUV);
+
+		p_hat = length(sc.Lo);
+
+		spatial_reservoir = updateReservoir(	spatial_reservoir, 
+												ss, 
+												sc, 
+												p_hat * candidate_reservoir.w * candidate_reservoir.z, 
+												candidate_reservoir.z, 
+												seed);		
+
+	}
+
+	p_hat = length(ss.Lo);
+	spatial_reservoir.w = p_hat > 0 ? (1 / max(p_hat, 0.0001)) * (spatial_reservoir.x / max(spatial_reservoir.z, 0.0001)) : 0.0;
+	reservoir = spatial_reservoir;
+	s.Lo = ss.Lo;
+	s.s_p = ss.s_p;
+	s.s_n = ss.s_n;
+	s.cosine = ss.cosine;
+	s.pdf = ss.pdf;
+
+	//___________________________________________________________________________________________________________________________________________________________
+
+	color[0] = reservoir;
+	color[1] = vec4(s.Lo, 0.0);
+	color[2] = vec4(s.s_p, s.cosine);
+	color[3] = vec4(s.s_n, s.pdf);
+
+}	
+]]>
+		</program>
+	</language>
+</jittershader>

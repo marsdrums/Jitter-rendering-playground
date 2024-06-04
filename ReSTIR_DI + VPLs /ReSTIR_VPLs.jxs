@@ -1,0 +1,465 @@
+<jittershader name="fill-flat-quads">
+	<description>Default Shader </description>
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="objTex" type="int" default="0" />
+	<param name="posTex" type="int" default="1" />
+	<param name="norTex" type="int" default="2" />
+	<param name="albTex" type="int" default="3" />
+	<param name="reservoirTex" type="int" default="4" />
+	<param name="VPLposTex" type="int" default="5" />
+	<param name="VPLcolTex" type="int" default="6" />
+	<param name="VPLnorTex" type="int" default="7" />
+	<param name="viewPort" type="vec2" state="VIEWPORT" />
+ 	<param name="objNum" type="vec2" state="TEXDIM0" />
+  	<param name="texDim" type="vec2" state="TEXDIM4" />
+ 	<param name="N" type="vec2" state="TEXDIM5" />
+ 	<param name="eye" type="vec3" state="CAMERA_POSITION" />
+ 	<param name="frame" type="int" state="FRAME" />
+ 	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+ 	<param name="prevMVP" type="mat4" state="PREV_MODELVIEW_PROJECTION_MATRIX" />
+ 	<param name="num_lights" type="float" default="40" />
+	<language name="glsl" version="1.5">
+		<bind param="pos" program="vp" />
+		<bind param="objTex" program="fp" />
+		<bind param="posTex" program="fp" />
+		<bind param="norTex" program="fp" />
+		<bind param="albTex" program="fp" />
+		<bind param="reservoirTex" program="fp" />
+		<bind param="VPLposTex" program="fp" />
+		<bind param="VPLcolTex" program="fp" />
+		<bind param="VPLnorTex" program="fp" />
+		<bind param="viewPort" program="vp" />
+		<bind param="viewPort" program="fp" />
+		<bind param="objNum" program="fp" />
+		<bind param="texDim" program="fp" />
+		<bind param="texDim" program="vp" />
+		<bind param="N" program="vp" />
+		<bind param="eye" program="fp" />
+		<bind param="frame" program="fp" />
+		<bind param="MVP" program="fp" />
+		<bind param="prevMVP" program="fp" />
+		<bind param="num_lights" program="fp" />
+		<program name="vp" type="vertex">
+<![CDATA[
+#version 330 core
+in vec3 pos;
+uniform vec2 viewPort, texDim;
+uniform vec2 N;
+
+out jit_PerVertex {
+	smooth vec2 uv;	
+	flat float N;
+} jit_out;
+
+void main() {	
+	gl_Position = vec4(pos.xy,0,1);	
+	jit_out.uv = (pos.xy * vec2(0.5, -0.5) + 0.5)*texDim;
+	jit_out.N = N.x;
+}
+]]>
+		</program>
+		<program name="fp" type="fragment">
+<![CDATA[
+#version 330 core
+#define FAR 100000
+#define BACKGROUND vec3(0)
+#define M_1_PI 0.318309886183790671538
+#define M_PI   3.14159265358979323846264338327950288
+
+uniform sampler2DRect objTex, posTex, norTex, albTex, reservoirTex, VPLposTex, VPLcolTex, VPLnorTex;
+uniform vec2 objNum, texDim, viewPort;
+uniform vec3 eye;
+uniform int frame;
+uniform mat4 MVP, prevMVP;
+uniform float num_lights;
+
+in jit_PerVertex {
+	smooth vec2 uv;
+	flat float N;
+} jit_in;
+
+out vec4 color[3];
+
+struct rayInfo{
+	vec3 o;
+	vec3 d;
+	vec3 invd;
+	vec3 invdtimeso;
+	vec3 absinvd;
+};
+
+struct hitInfo{
+	float tn; //enter distance
+	float tf; //exit distance
+	vec3 t1;
+	vec3 t2;
+	vec3 n; //normal
+	vec3 p; //position
+	vec3 c; //color
+	mat4 txi;
+	vec3 rdd;
+	vec3 roo;
+};
+
+struct objInfo{
+	vec3 p; //position
+	vec3 s; //scale
+	vec4 r; //rotation
+	vec3 c; //color
+	mat4 txx; 
+	mat4 txi;
+};
+
+struct bestInfo{
+	float tn; //enter distance
+	float tf; //exit distance
+	vec3 t1;
+	vec3 t2;
+	vec3 n; //normal
+	vec3 p; //position
+	vec3 c; //color
+	float i;
+	mat4 txi;
+	vec3 rdd;
+	vec3 roo;
+};
+
+
+#define OCTAVES 6.
+#define PI 3.14159265359
+#define TWOPI 6.28318530718 
+
+uint wang_hash(inout uint seed){
+
+    seed = uint(seed ^ uint(61)) ^ uint(seed >> uint(16));
+    seed *= uint(9);
+    seed = seed ^ (seed >> 4);
+    seed *= uint(0x27d4eb2d);
+    seed = seed ^ (seed >> 15);
+    return seed;
+}
+ 
+float RandomFloat01(inout uint seed) { 
+	return float(wang_hash(seed)) / 4294967296.0; 
+}
+
+vec2 RandomVec201(inout uint seed) { 
+	return vec2( 	RandomFloat01(seed),
+					RandomFloat01(seed)); 
+}
+
+vec3 RandomVec301(inout uint seed) { 
+	return vec3( 	RandomFloat01(seed),
+					RandomFloat01(seed),
+					RandomFloat01(seed)); 
+}
+
+vec4 RandomVec401(inout uint seed) { 
+	return vec4( 	RandomFloat01(seed),
+					RandomFloat01(seed),
+					RandomFloat01(seed),
+					RandomFloat01(seed)); 
+}
+
+vec2 randomUnitVector2(inout uint seed){
+
+    float a = RandomFloat01(seed) * TWOPI;
+    return vec2( cos(a), sin(a) );
+}
+
+vec3 randomUnitVector3(inout uint seed){
+
+    float z = RandomFloat01(seed) * 2.0f - 1.0f;
+    float a = RandomFloat01(seed) * TWOPI;
+    float r = sqrt(1.0f - z * z);
+    float x = r * cos(a);
+    float y = r * sin(a);
+    return vec3(x, y, z);
+}
+
+mat4 rotationAxisAngle( vec3 v, float angle )
+{
+    float s = sin( angle );
+    float c = cos( angle );
+    float ic = 1.0 - c;
+
+    return mat4( v.x*v.x*ic + c,     v.y*v.x*ic - s*v.z, v.z*v.x*ic + s*v.y, 0.0,
+                 v.x*v.y*ic + s*v.z, v.y*v.y*ic + c,     v.z*v.y*ic - s*v.x, 0.0,
+                 v.x*v.z*ic - s*v.y, v.y*v.z*ic + s*v.x, v.z*v.z*ic + c,     0.0,
+			     0.0,                0.0,                0.0,                1.0 );
+}
+
+mat4 translate( float x, float y, float z )
+{
+    return mat4( 1.0, 0.0, 0.0, 0.0,
+				 0.0, 1.0, 0.0, 0.0,
+				 0.0, 0.0, 1.0, 0.0,
+				 x,   y,   z,   1.0 );
+}
+
+
+// axis aligned box centered at the origin, with size boxSize
+bool box_intersection( in rayInfo ray, out hitInfo hit, in objInfo obj ) {
+    //vec3 n = ray.invd*ray.o;   // can precompute if traversing a set of aligned boxes
+    // convert from ray to box space
+	hit.rdd = (obj.txx*vec4(ray.d,0.0)).xyz;
+	hit.roo = (obj.txx*vec4(ray.o,1.0)).xyz;
+
+	// ray-box intersection in box space
+    vec3 m = 1.0/hit.rdd;
+    vec3 n = m*hit.roo;
+    vec3 k = abs(m)*obj.s;
+    hit.t1 = -n - k;
+    hit.t2 = -n + k;
+    hit.tn = max( max( hit.t1.x, hit.t1.y ), hit.t1.z );
+    hit.tf = min( min( hit.t2.x, hit.t2.y ), hit.t2.z );
+    hit.txi = obj.txi; //this could be better
+    return (hit.tn <= hit.tf) && (hit.tf >= 0.0);
+    //if( hit.tn > hit.tf || hit.tf < 0.0) return false; // no intersection
+    //return true;
+}
+
+void get_obj_info(out objInfo obj, in float i){
+	obj.p = texture(objTex, vec2(i, 0.5)).xyz;
+	obj.r = texture(objTex, vec2(i, 1.5));
+	obj.s = texture(objTex, vec2(i, 2.5)).xyz;
+
+    // rotate and translate box	
+	mat4 rot = rotationAxisAngle( normalize(obj.r.xyz), obj.r.w );
+	mat4 tra = translate( obj.p.x, obj.p.y, obj.p.z );
+	obj.txi = tra * rot; 
+	obj.txx = inverse( obj.txi );
+}
+
+bool shadow_ray(vec3 p0, vec3 p1){
+
+	rayInfo ray;
+	objInfo obj;
+	hitInfo hit;
+
+	vec3 diff = p1 - p0;
+	float dist = length(diff);
+
+	ray.o = p0;
+	ray.d = diff / dist;
+	ray.o += ray.d*0.002;
+	for(float i = objNum.x-0.5; i >= 0.0; i-=1.0){
+		get_obj_info(obj, i);
+		if(box_intersection(ray, hit, obj)){
+			if(hit.tn <= dist) return false;
+		} 
+	}
+	return true;
+}
+
+vec4 updateReservoir(vec4 reservoir, float lightToSample, float weight, float c, inout uint seed)
+{
+	// Algorithm 2 of ReSTIR paper
+	reservoir.x = reservoir.x + weight; // r.w_sum
+	reservoir.z = reservoir.z + c; // r.M
+	//reservoir.z = max(reservoir.z, 10); //clamp to make indirect more reactive to changes
+	if (RandomFloat01(seed) < weight / reservoir.x) {
+		reservoir.y = lightToSample; // r.y
+	}
+
+	return reservoir;
+}
+
+float GetInitialPhat(int i, vec3 pos, vec3 nor, vec3 alb){
+
+	vec2 uv = vec2(mod(float(i), 128), floor(float(i)/128));
+	vec3 ligCol = texture(VPLcolTex, uv).rgb;
+
+	if( (ligCol.r + ligCol.g + ligCol.b) == 0.0) return 0.0;
+
+	vec3 ligNor = texture(VPLnorTex, uv).xyz;
+
+	vec3 ligPos = texture(VPLposTex, uv).xyz;
+	vec3 posDiff = ligPos - pos;
+	float ligDist2 = dot(posDiff, posDiff); // squared dist
+	vec3 ligDir = posDiff / sqrt(ligDist2);
+	ligDist2 = max(ligDist2, 1);//to contain flickering for very close VPLs
+	if(dot(ligNor, ligDir) > 0.0) return 0.0;//avoid getting light from VPLs behind walls
+	float lambert = max(0, dot(ligDir, nor));
+	return length( ligCol*(alb)*lambert/ligDist2 );
+	//you should consider the full BRDF
+}
+
+vec3 GetPointLightRadiance(int i, vec3 pos, vec3 nor, vec3 alb){
+
+	vec2 uv = vec2(mod(float(i), 128), floor(float(i)/128));
+	vec3 ligNor = texture(VPLnorTex, uv).xyz;
+
+	vec3 ligPos = texture(VPLposTex, uv).xyz;
+	vec3 ligCol = texture(VPLcolTex, uv).rgb;
+	vec3 posDiff = ligPos - pos;
+	float ligDist2 = dot(posDiff, posDiff); // squared dist
+	vec3 ligDir = posDiff / sqrt(ligDist2);
+	ligDist2 = max(ligDist2, 1);//to contain flickering for very close VPLs
+	if(dot(ligNor, ligDir) > 0.0) return vec3(0.0);//avoid getting light from VPLs behind walls
+	float lambert = max(0, dot(ligDir, nor));
+	return ligCol*(alb)*lambert/ligDist2;
+	//you should consider the full BRDF
+}
+
+
+void main() {
+
+	uint seed = uint(jit_in.uv.x*2918) + uint(jit_in.uv.y*91192) + uint(7723*frame);
+
+	vec3 pos = texture(posTex, jit_in.uv).xyz;
+	vec3 nor = texture(norTex, jit_in.uv).xyz;
+	vec3 alb = texture(albTex, jit_in.uv).xyz;
+
+	vec4 prevP = prevMVP * vec4(pos,1);
+    prevP /= prevP.w;
+    prevP.x = prevP.x*0.5 + 0.5;
+    prevP.y = -prevP.y*0.5 + 0.5;
+    vec2 prevUV = prevP.xy*texDim;
+
+    vec4 prev_reservoir = vec4(0);
+/*
+    //if previous UVs are valid, read the previous reservoir
+    if(	prevUV.x >= 0 && 
+    	prevUV.y >= 0 &&
+    	prevUV.x < texDim.x && 
+    	prevUV.y < texDim.y){
+    	prev_reservoir = texture(reservoirTex, prevUV);
+    }
+*/
+	prev_reservoir = texture(reservoirTex, jit_in.uv);
+
+    vec4 reservoir = vec4(0); //curr reservoir
+
+	int M = 32; //num of used lights
+	float N = num_lights*128;//jit_in.N;
+
+	float invPdf = N; //***non so se mettere /N per le point lights
+	float p_hat;
+	 
+	//initial selection of 1 light of M
+	for (int i = 0; i < min(N,M); i++)
+	{
+	    int lightIndex = int(RandomFloat01(seed) * (N - 1));
+	                   
+	    p_hat = GetInitialPhat(lightIndex, pos, nor, alb);
+	    p_hat *= invPdf;   
+	    //float w = p_hat / pdf;
+	     
+	    reservoir = updateReservoir(reservoir, float(lightIndex), p_hat, 1, seed);
+	}
+
+
+	p_hat = length(GetPointLightRadiance(int(reservoir.y), pos, nor, alb));
+	//p_hat /= pdf;
+	reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
+
+
+	//TEMPORAL REUSE//____________________________________________________________
+	vec4 temporal_reservoir = vec4(0);
+
+	// combine current reservoir
+	temporal_reservoir = updateReservoir(temporal_reservoir, reservoir.y, p_hat * reservoir.w * reservoir.z, reservoir.z, seed);
+	
+	// combine previous reservoir
+	p_hat = length(GetPointLightRadiance(int(prev_reservoir.y), pos, nor, alb));
+	//p_hat /= pdf;
+	prev_reservoir.z = min(20*reservoir.z, prev_reservoir.z);
+	temporal_reservoir = updateReservoir(temporal_reservoir, prev_reservoir.y, p_hat * prev_reservoir.w * prev_reservoir.z, prev_reservoir.z, seed);
+
+	// set M value
+	temporal_reservoir.z = reservoir.z + prev_reservoir.z;
+
+	// set W value
+	p_hat = length(GetPointLightRadiance(int(temporal_reservoir.y), pos, nor, alb));
+	//p_hat /= pdf;
+	temporal_reservoir.w = (1 / max(p_hat, 0.0001)) * (temporal_reservoir.x / max(temporal_reservoir.z, 0.0001));
+
+	// set current reservoir to the combined temporal reservoir
+	reservoir = temporal_reservoir;
+	//___________________________________________________________________________________________________________________________________________________________
+
+
+	//SPATIAL REUSE_____________________________________________________________________________
+	vec4 spatial_reservoir = vec4(0);
+
+	// combine current reservoir
+	spatial_reservoir = updateReservoir(spatial_reservoir, reservoir.y, p_hat * reservoir.w * reservoir.z, reservoir.z, seed);
+
+	// combine neighboring reservoir
+	int num_samples = 50;
+	float radius = 50;
+	vec4 neighbor_reservoir;
+	//const vec2 offset[8] = vec2[]	(	vec2(-1,-1),
+	//									vec2(+0,-1),
+	//									vec2(+1,-1),
+	//									vec2(-1,+0),
+	//									vec2(+1,+0),
+	//									vec2(-1,+1),
+	//									vec2(+0,+1),
+	//									vec2(+1,+1));
+	//for(int j = 0; j <= 5; j++){
+
+		//float exponent = pow(3, float(j));
+		radius *= 2;
+		for(int i = 0; i < num_samples; i++){
+
+			vec2 offset = radius * vec2(RandomFloat01(seed)-0.5, RandomFloat01(seed)-0.5);
+			vec2 neiUV = jit_in.uv + offset;
+			//neiUV = max(vec2(0), min(neiUV, texDim-1));
+			//vec2 neiUV = jit_in.uv + offset[i]*exponent;
+
+			if(	neiUV.x < 0 || neiUV.y < 0 || 
+				neiUV.x > texDim.x-1 || neiUV.y > texDim.y-1) continue;
+
+			vec3 candidateNor = texture(norTex, neiUV).xyz;
+			vec3 candidatePos = texture(posTex, neiUV).xyz;
+
+			if(	dot(nor, candidateNor) < 0.9 || 
+				length(pos - candidatePos) > 0.3) continue;
+
+
+			neighbor_reservoir = texture(reservoirTex, neiUV);
+			neighbor_reservoir.z = min(2*reservoir.z, neighbor_reservoir.z);
+
+			p_hat = length(GetPointLightRadiance(int(neighbor_reservoir.y), pos, nor, alb));
+			//p_hat /= pdf;
+
+			spatial_reservoir = updateReservoir(spatial_reservoir, neighbor_reservoir.y, p_hat * neighbor_reservoir.w * neighbor_reservoir.z, neighbor_reservoir.z, seed);
+
+		}		
+	//}
+
+	// set W value
+	p_hat = length(GetPointLightRadiance(int(spatial_reservoir.y), pos, nor, alb));
+	//p_hat /= pdf;
+	spatial_reservoir.w = p_hat > 0 ? (1 / max(p_hat, 0.0001)) * (spatial_reservoir.x / max(spatial_reservoir.z, 0.0001)) : 0.0;
+
+	reservoir = spatial_reservoir;
+
+	//______________________________________________________________________________________________________________________________________________
+
+	//compute lighting and visibility
+	vec2 uv = vec2(mod(reservoir.y, 128), floor(reservoir.y/128));
+	vec3 ligPos = texture(VPLposTex, uv).xyz;
+	//vec3 ligCol = texelFetch(ligColBuf, reservoir.Y).rgb;
+	bool visible = shadow_ray(pos, ligPos);
+	float shadowFactor = visible ? 1 : 0;
+	vec3 radiance = shadowFactor * GetPointLightRadiance(int(reservoir.y), pos, nor, alb);
+	p_hat = length(radiance);
+	//p_hat /= pdf;
+	reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
+	reservoir.w *= visible ? 1 : 0;
+
+	radiance *= reservoir.w;
+
+	color[0] = vec4(radiance,1);
+	color[1] = reservoir;
+
+	//color[2] = texture(reservoirTex, jit_in.uv);
+
+}	
+]]>
+		</program>
+	</language>
+</jittershader>
