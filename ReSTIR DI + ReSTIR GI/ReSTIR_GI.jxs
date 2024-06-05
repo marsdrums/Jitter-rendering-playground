@@ -237,6 +237,31 @@ vec3 randomUnitVector3(inout uint seed){
     return vec3(x, y, z);
 }
 
+//http://orbit.dtu.dk/fedora/objects/orbit:113874/datastreams/file_75b66578-222e-4c7d-abdf-f7e255100209/content
+mat3 fast_orthonormal_basis(in vec3 n)
+{
+    vec3 f, r;
+    if(n.z < -0.999999)
+    {
+        f = vec3(0 , -1, 0);
+        r = vec3(-1, 0, 0);
+    }
+    else
+    {
+    	float a = 1./(1. + n.z);
+    	float b = -n.x*n.y*a;
+    	f = vec3(1. - n.x*n.x*a, b, -n.x);
+    	r = vec3(b, 1. - n.y*n.y*a , -n.y);
+    }
+
+    float a = 1./(1. + n.z);
+    float b = -n.x*n.y*a;
+    f = vec3(1. - n.x*n.x*a, b, -n.x);
+   	r = vec3(b, 1. - n.y*n.y*a , -n.y);
+   	return mat3(r, n, f);
+
+}
+
 mat4 rotationAxisAngle( vec3 v, float angle ){
     float s = sin( angle );
     float c = cos( angle );
@@ -380,7 +405,16 @@ void get_direct_light(in rayInfo ray, in bestInfo bes, inout searchInfo sea, ino
 		}
 	}
 }
+/*
+vec3 read_stbn(){
 
+	vec2 uv = mod(jit_in.uv, vec2(128));
+	float mFrame = mod(float(frame), 64);
+	vec2 offset = vec2(0.0);	//vec2(	mod(mFrame, 8), 
+								//		floor(mFrame/ 8)) * 128;
+	return texture(randTex, mod(gl_FragCoord.xy, vec2(128))).xyz;
+}
+*/
 void raytrace( vec3 pos, vec3 nor, vec4 alb , inout searchInfo sea, inout firstHitInfo fhi) {
 
 	objInfo obj;
@@ -397,6 +431,10 @@ void raytrace( vec3 pos, vec3 nor, vec4 alb , inout searchInfo sea, inout firstH
 	bes.n = nor;
 	bes.c = alb;
 
+	//vec3 up = vec3(0,1,0);
+	//vec3 right = normalize(cross(nor, up));
+	//vec3 front = normalize(cross(nor, right));
+	//mat3 TBN = fast_orthonormal_basis(nor);
 
 	sea.cosine = 1;//dot(ray.d, bes.n); //the first bounce the cosine 
 
@@ -411,7 +449,15 @@ void raytrace( vec3 pos, vec3 nor, vec4 alb , inout searchInfo sea, inout firstH
 
 
 		//BRDF
-		ray.d = normalize(bes.n + randomUnitVector3(sea.seed));
+		if(s == 0){
+
+			ray.d = normalize(bes.n + randomUnitVector3(sea.seed));//normalize(TBN * read_stbn());
+
+		} else {
+
+			ray.d = normalize(bes.n + randomUnitVector3(sea.seed));
+		}
+		
 		//ray.d = randomUnitVector3(sea.seed);
 		//ray.d *= dot(ray.d, bes.n) > 0.0 ? 1.0 : 0.0;
 		//ray.d *= dot(ray.d, nor) > 0.0 ? 1 : -1;
