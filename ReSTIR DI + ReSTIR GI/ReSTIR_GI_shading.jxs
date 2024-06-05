@@ -308,7 +308,7 @@ bool shadow_ray(vec3 ro, vec3 dir, float dist){
 
 	for(float i = objNum.x-0.5; i >= 0.0; i-=1.0){
 		get_obj_info(obj, i);
-		if(box_intersection_shadow(ro, dir, obj) < dist-0.6) return false;
+		if(box_intersection_shadow(ro, dir, obj) < dist) return false;
 	}
 
 	return true;

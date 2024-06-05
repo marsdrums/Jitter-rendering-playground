@@ -375,9 +375,10 @@ void update_ray(inout rayInfo ray, in bestInfo bes, inout searchInfo sea){
 
 bool shadow_ray(vec3 ro, vec3 dir, float dist, inout objInfo obj){
 
-	for(float i = objNum.x-0.5; i >= 0.0; i-=1.0){
+	ro += dir*1e-5;
+	for(float i = objNum.x-0.5 - 1; i >= 0.0; i-=1.0){ //-1 to exclude the light as solid object ***TO REMOVE LATER
 		get_obj_info(obj, i);
-		if(box_intersection_shadow(ro, dir, obj) < dist-0.6) return false;
+		if( box_intersection_shadow(ro, dir, obj) < (dist + 2*1e-5) ) return false;
 	}
 	return true;
 }
@@ -398,7 +399,7 @@ void get_direct_light(in rayInfo ray, in bestInfo bes, inout searchInfo sea, ino
 		float brdf_pdf = INV_PI;
 		float w = light_pdf / (light_pdf + brdf_pdf);
 		vec3 brdf = bes.c.rgb / PI;
-		if(shadow_ray(ray.o + dir*1e-5, dir, dist, obj)){
+		if(shadow_ray(ray.o, dir, dist, obj)){
 			vec3 Le = light_color; //*** substitute the fixed light color with the index of an emitting object
 			sea.finalColor += sea.tru * (Le * w * brdf) / light_pdf;
 		}
