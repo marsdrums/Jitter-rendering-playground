@@ -1344,7 +1344,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1130.0, 740.0, 111.0, 22.0 ],
+					"patching_rect" : [ 1103.0, 585.0, 111.0, 22.0 ],
 					"text" : "prepend cube_light"
 				}
 
@@ -1440,7 +1440,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "float" ],
-					"patching_rect" : [ 1183.0, 599.0, 33.0, 22.0 ],
+					"patching_rect" : [ 1156.0, 444.0, 33.0, 22.0 ],
 					"text" : "* 0.5"
 				}
 
@@ -1587,7 +1587,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 301.0, 756.0, 70.0, 22.0 ],
+					"patching_rect" : [ 334.0, 786.0, 70.0, 22.0 ],
 					"text" : "loadmess 1"
 				}
 
@@ -1902,7 +1902,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1130.0, 694.0, 121.0, 22.0 ],
+					"patching_rect" : [ 1103.0, 539.0, 121.0, 22.0 ],
 					"text" : "prepend light_sparse"
 				}
 
@@ -1914,7 +1914,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "float" ],
-					"patching_rect" : [ 1130.0, 646.0, 27.0, 22.0 ],
+					"patching_rect" : [ 1103.0, 491.0, 27.0, 22.0 ],
 					"text" : "cos"
 				}
 
@@ -1926,7 +1926,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "float" ],
-					"patching_rect" : [ 1130.0, 599.0, 33.0, 22.0 ],
+					"patching_rect" : [ 1103.0, 444.0, 33.0, 22.0 ],
 					"text" : "* 0.3"
 				}
 
@@ -1938,7 +1938,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 1130.0, 562.0, 43.0, 22.0 ],
+					"patching_rect" : [ 1103.0, 407.0, 43.0, 22.0 ],
 					"text" : "jit.time"
 				}
 
@@ -3032,7 +3032,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 3,
 					"outlettype" : [ "jit_gl_texture", "", "" ],
-					"patching_rect" : [ 438.0, 851.0, 203.0, 22.0 ],
+					"patching_rect" : [ 438.0, 878.0, 203.0, 22.0 ],
 					"text" : "jit.gl.node @capture 3 @type float32"
 				}
 
@@ -3044,7 +3044,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 532.0, 1067.0, 294.0, 22.0 ],
+					"patching_rect" : [ 557.5, 1090.0, 294.0, 22.0 ],
 					"text" : "jit.gl.shader @file ReSTIR_DI.jxs @name ReSTIR_DI"
 				}
 
@@ -3056,7 +3056,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
-					"patching_rect" : [ 561.0, 901.0, 58.0, 22.0 ],
+					"patching_rect" : [ 586.5, 924.0, 58.0, 22.0 ],
 					"text" : "loadbang"
 				}
 
@@ -3068,7 +3068,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 561.0, 941.0, 238.0, 22.0 ],
+					"patching_rect" : [ 586.5, 964.0, 238.0, 22.0 ],
 					"text" : "exprfill 0 snorm[0], exprfill 1 snorm[1], bang"
 				}
 
@@ -3080,7 +3080,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 561.0, 976.0, 123.0, 22.0 ],
+					"patching_rect" : [ 586.5, 999.0, 123.0, 22.0 ],
 					"text" : "jit.matrix 3 float32 2 2"
 				}
 
@@ -3092,7 +3092,7 @@
 					"numinlets" : 9,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 530.0, 1026.0, 457.0, 22.0 ],
+					"patching_rect" : [ 555.5, 1049.0, 457.0, 22.0 ],
 					"text" : "jit.gl.mesh @shader ReSTIR_DI @texture objTex posTex norTex albTex reservoirTex"
 				}
 
@@ -3685,7 +3685,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 3,
 					"outlettype" : [ "jit_gl_texture", "", "" ],
-					"patching_rect" : [ 438.0, 339.0, 319.0, 22.0 ],
+					"patching_rect" : [ 438.0, 355.0, 319.0, 22.0 ],
 					"text" : "jit.gl.node @capture 3 @type foat32 @erase_color 0 0 0 0"
 				}
 
@@ -3697,7 +3697,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
-					"patching_rect" : [ 666.0, 386.0, 58.0, 22.0 ],
+					"patching_rect" : [ 631.0, 395.0, 58.0, 22.0 ],
 					"text" : "loadbang"
 				}
 
@@ -3709,7 +3709,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 666.0, 426.0, 238.0, 22.0 ],
+					"patching_rect" : [ 631.0, 435.0, 238.0, 22.0 ],
 					"text" : "exprfill 0 snorm[0], exprfill 1 snorm[1], bang"
 				}
 
@@ -3721,7 +3721,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 666.0, 461.0, 123.0, 22.0 ],
+					"patching_rect" : [ 631.0, 470.0, 123.0, 22.0 ],
 					"text" : "jit.matrix 3 float32 2 2"
 				}
 
@@ -3733,7 +3733,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 666.0, 536.0, 306.0, 22.0 ],
+					"patching_rect" : [ 631.0, 545.0, 306.0, 22.0 ],
 					"text" : "jit.gl.shader @name primaryRays @file primaryRays.jxs"
 				}
 
@@ -3745,7 +3745,7 @@
 					"numinlets" : 9,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 666.0, 498.0, 276.0, 22.0 ],
+					"patching_rect" : [ 631.0, 507.0, 276.0, 22.0 ],
 					"text" : "jit.gl.mesh @shader primaryRays @texture objTex"
 				}
 
@@ -3784,7 +3784,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 301.0, 795.0, 150.0, 22.0 ]
+					"patching_rect" : [ 334.0, 825.0, 150.0, 22.0 ]
 				}
 
 			}
