@@ -208,7 +208,7 @@ void main() {
 
 	get_ray_info(ray);
 	ray_trace(ray, hit, bes);
-	color[0] = vec4(bes.p, 1);
+	color[0] = vec4(bes.p, bes.i/objNum);
 	color[1] = vec4(bes.n, 1);
 	color[2] = vec4(bes.c, 1);
 }	
