@@ -66,7 +66,7 @@ in jit_PerVertex {
 	smooth vec2 uv;	
 } jit_in;
 
-out vec4 color[6];
+out vec4 color[4];
 
 struct rayInfo{
 	vec3 o;
@@ -379,7 +379,6 @@ bool shadow_ray(vec3 ro, vec3 dir, float dist, inout objInfo obj){
 		get_obj_info(obj, i);
 		if(box_intersection_shadow(ro, dir, obj) < dist-0.6) return false;
 	}
-
 	return true;
 }
 
@@ -438,7 +437,6 @@ void raytrace( vec3 pos, vec3 nor, vec4 alb , inout searchInfo sea, inout firstH
 
 	sea.cosine = 1;//dot(ray.d, bes.n); //the first bounce the cosine 
 
-
 	for(int s = 0; s < MAX_BOUNCES; s++){
 
 		if(s > 0){ //remove comment to skip direct lighting
@@ -446,7 +444,6 @@ void raytrace( vec3 pos, vec3 nor, vec4 alb , inout searchInfo sea, inout firstH
 			// NEE
 			get_direct_light(ray, bes, sea, obj);		
 		}
-
 
 		//BRDF
 		if(s == 0){
@@ -516,12 +513,10 @@ vec4 updateReservoir(vec4 reservoir, float pathToFollow, float weight, float c, 
 	if (RandomFloat01(seed) < weight / reservoir.x) {
 		reservoir.y = pathToFollow; // r.y
 	}
-
 	return reservoir;
 }
 
 void main() {
-
 
 
 	vec3 pos = texture(posTex, jit_in.uv).xyz; //G-buffer pos

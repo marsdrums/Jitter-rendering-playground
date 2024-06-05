@@ -3293,6 +3293,7 @@
 						"style" : "",
 						"subpatcher_template" : "",
 						"assistshowspatchername" : 0,
+						"visible" : 1,
 						"boxes" : [ 							{
 								"box" : 								{
 									"id" : "obj-4",
@@ -3300,7 +3301,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 827.0, 104.0, 175.0, 22.0 ],
+									"patching_rect" : [ 31.0, 98.0, 175.0, 22.0 ],
 									"text" : "setcell 7 0 val 0 $2 $3 $4, bang"
 								}
 
@@ -3314,7 +3315,7 @@
 									"numinlets" : 0,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 849.0, 44.0, 30.0, 30.0 ]
+									"patching_rect" : [ 31.0, 44.0, 30.0, 30.0 ]
 								}
 
 							}
@@ -3325,7 +3326,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
-									"patching_rect" : [ 603.0, 48.0, 58.0, 22.0 ],
+									"patching_rect" : [ 572.0, 86.0, 58.0, 22.0 ],
 									"text" : "loadbang"
 								}
 
@@ -3338,7 +3339,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 255.0, 151.0, 151.0, 129.0 ],
+									"patching_rect" : [ 230.0, 151.0, 151.0, 129.0 ],
 									"text" : "setcell 0 0 val 0 0 1 0, setcell 1 0 val 0 0 1 0, setcell 2 0 val 0 0 1 0, setcell 3 0 val 0 0 1 0, setcell 4 0 val 0 0 1 0, setcell 5 0 val -0.3 0 1 0, setcell 6 0 val 0.35 0 1 0, setcell 7 0 val 0 0 1 0, bang"
 								}
 
@@ -3346,12 +3347,12 @@
 , 							{
 								"box" : 								{
 									"id" : "obj-59",
-									"linecount" : 2,
+									"linecount" : 9,
 									"maxclass" : "message",
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 430.0, 87.0, 906.0, 35.0 ],
+									"patching_rect" : [ 395.0, 144.0, 170.0, 129.0 ],
 									"text" : "setcell 0 0 val 0. 2. 0.1 2., setcell 1 0 val 0. 2. 0.1 2., setcell 2 0 val 0. 2. 2. 0.1, setcell 3 0 val 0. 0.1 2. 2., setcell 4 0 val 0. 0.1 2. 2., setcell 5 0 val 0. 0.4 0.5 0.4, setcell 6 0 val 0. 0.5 1 0.5, setcell 7 0 val 0. 0.5 0.05 0.5, bang"
 								}
 
@@ -3364,7 +3365,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 20.0, 126.0, 133.0, 129.0 ],
+									"patching_rect" : [ 68.0, 151.0, 160.0, 129.0 ],
 									"text" : "setcell 0 0 val 0 0 -2 0, setcell 1 0 val 0 0 2 0, setcell 2 0 val 0 0 0 -2, setcell 3 0 val 0 -2 0 0, setcell 4 0 val 0 2 0 0, setcell 5 0 val 0 -0.6 -1.5 1, setcell 6 0 val 0 0.8 -1 0, setcell 7 0 val 0 0 1.9 0, bang"
 								}
 
@@ -3376,7 +3377,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 2,
 									"outlettype" : [ "jit_matrix", "" ],
-									"patching_rect" : [ 92.0, 478.0, 136.0, 22.0 ],
+									"patching_rect" : [ 68.0, 487.0, 136.0, 22.0 ],
 									"text" : "jit.concat @concatdim 1"
 								}
 
@@ -3388,7 +3389,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 2,
 									"outlettype" : [ "jit_matrix", "" ],
-									"patching_rect" : [ 270.0, 432.0, 136.0, 22.0 ],
+									"patching_rect" : [ 230.0, 430.0, 136.0, 22.0 ],
 									"text" : "jit.concat @concatdim 1"
 								}
 
@@ -3400,7 +3401,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 2,
 									"outlettype" : [ "jit_matrix", "" ],
-									"patching_rect" : [ 444.0, 368.0, 136.0, 22.0 ],
+									"patching_rect" : [ 395.0, 375.0, 136.0, 22.0 ],
 									"text" : "jit.concat @concatdim 1"
 								}
 
@@ -3408,12 +3409,12 @@
 , 							{
 								"box" : 								{
 									"id" : "obj-43",
-									"linecount" : 3,
+									"linecount" : 9,
 									"maxclass" : "message",
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 810.0, 234.0, 525.0, 49.0 ],
+									"patching_rect" : [ 572.0, 144.0, 158.0, 129.0 ],
 									"text" : "setcell 0 0 val 0 0.5 0.5 0.5, setcell 1 0 val 0 0.5 0.5 0.5, setcell 2 0 val 0 0.5 0.5 0.5, setcell 3 0 val 0 0.5 0.1 0.1, setcell 4 0 val 0 0.1 0.5 0.1, setcell 5 0 val 0 0.5 0.5 0.5, setcell 6 0 val 0 0.5 0.5 0.5, setcell 7 0 val 20 1 1 1, bang"
 								}
 
@@ -3424,7 +3425,7 @@
 									"maxclass" : "comment",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 734.0, 310.0, 28.0, 20.0 ],
+									"patching_rect" : [ 629.0, 282.0, 28.0, 20.0 ],
 									"text" : "col"
 								}
 
@@ -3436,7 +3437,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "jit_matrix", "" ],
-									"patching_rect" : [ 607.0, 309.0, 123.0, 22.0 ],
+									"patching_rect" : [ 572.0, 309.0, 123.0, 22.0 ],
 									"text" : "jit.matrix 4 float32 8 1"
 								}
 
@@ -3447,7 +3448,7 @@
 									"maxclass" : "comment",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 559.0, 310.0, 28.0, 20.0 ],
+									"patching_rect" : [ 449.0, 282.0, 28.0, 20.0 ],
 									"text" : "sca"
 								}
 
@@ -3459,7 +3460,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "jit_matrix", "" ],
-									"patching_rect" : [ 430.0, 309.0, 123.0, 22.0 ],
+									"patching_rect" : [ 395.0, 309.0, 123.0, 22.0 ],
 									"text" : "jit.matrix 4 float32 8 1"
 								}
 
@@ -3470,7 +3471,7 @@
 									"maxclass" : "comment",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 308.0, 282.0, 28.0, 20.0 ],
+									"patching_rect" : [ 273.0, 282.0, 28.0, 20.0 ],
 									"text" : "rot"
 								}
 
@@ -3482,7 +3483,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "jit_matrix", "" ],
-									"patching_rect" : [ 265.0, 309.0, 123.0, 22.0 ],
+									"patching_rect" : [ 230.0, 309.0, 123.0, 22.0 ],
 									"text" : "jit.matrix 4 float32 8 1"
 								}
 
@@ -3493,7 +3494,7 @@
 									"maxclass" : "comment",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 155.0, 288.0, 28.0, 20.0 ],
+									"patching_rect" : [ 134.0, 282.0, 28.0, 20.0 ],
 									"text" : "pos"
 								}
 
@@ -3505,7 +3506,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "jit_matrix", "" ],
-									"patching_rect" : [ 20.0, 314.0, 123.0, 22.0 ],
+									"patching_rect" : [ 68.0, 314.0, 123.0, 22.0 ],
 									"text" : "jit.matrix 4 float32 8 1"
 								}
 
@@ -3518,7 +3519,7 @@
 									"maxclass" : "outlet",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 92.0, 560.0, 30.0, 30.0 ]
+									"patching_rect" : [ 68.0, 545.0, 30.0, 30.0 ]
 								}
 
 							}
