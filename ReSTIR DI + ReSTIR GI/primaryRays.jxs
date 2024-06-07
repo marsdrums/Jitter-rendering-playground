@@ -2,18 +2,20 @@
 	<description>Computes primary visibility casting rays from the viewport</description>
 	<param name="pos" type="vec3" state="POSITION" />
 	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="prevMVP" type="mat4" state="PREV_MODELVIEW_PROJECTION_MATRIX" />
+	<param name="invV" type="mat4" state="VIEW_MATRIX" transform="INVERSE" />
 	<param name="viewPort" type="vec2" state="VIEWPORT" />
 	<param name="eye" type="vec3" state="CAMERA_POSITION" />
-	<param name="invV" type="mat4" state="VIEW_MATRIX" transform="INVERSE" />
 	<param name="farCorner" type="vec3" state="FAR_CORNER" />
 	<param name="objTex" type="int" default="0" />
 	<param name="objNum" type="vec2" state="TEXDIM0" />
 	<language name="glsl" version="1.5">
 		<bind param="pos" program="vp" />
-		<bind param="MVP" program="vp" />
+		<bind param="MVP" program="fp" />
+		<bind param="prevMVP" program="fp" />
+		<bind param="invV" program="vp" />
 		<bind param="viewPort" program="vp" />
 		<bind param="eye" program="fp" />
-		<bind param="invV" program="vp" />
 		<bind param="farCorner" program="vp" />
 		<bind param="objTex" program="fp" />
 		<bind param="objNum" program="fp" />
@@ -21,9 +23,9 @@
 <![CDATA[
 #version 330 core
 in vec3 pos;
-uniform mat4 MVP, invV;
 uniform vec3 farCorner;
 uniform vec2 viewPort;
+uniform mat4 invV;
 
 out jit_PerVertex {
 	smooth vec2 uv;	
@@ -49,6 +51,7 @@ void main() {
 uniform vec3 eye;
 uniform sampler2DRect objTex;
 uniform vec2 objNum;
+uniform mat4 MVP, prevMVP;
 
 in jit_PerVertex {
 	smooth vec2 uv;	
@@ -200,6 +203,15 @@ void ray_trace(in rayInfo ray, inout hitInfo hit, out bestInfo bes){
 	get_normal_position_color(bes, ray);
 }
 
+vec2 calc_velocity(in bestInfo bes){
+
+	vec4 currP = MVP * vec4(bes.p,1);
+	vec4 prevP = prevMVP * vec4(bes.p,1);
+	currP.xy /= currP.w;
+	prevP.xy /= prevP.w;
+	return currP.xy - prevP.xy;
+}
+
 void main() {
 
 	rayInfo ray;
@@ -208,9 +220,10 @@ void main() {
 
 	get_ray_info(ray);
 	ray_trace(ray, hit, bes);
+	vec2 velocity = calc_velocity(bes);
 	color[0] = vec4(bes.p, bes.i/objNum);
-	color[1] = vec4(bes.n, 1);
-	color[2] = vec4(bes.c, 1);
+	color[1] = vec4(bes.n, velocity.x);
+	color[2] = vec4(bes.c, velocity.y);
 }	
 ]]>
 		</program>

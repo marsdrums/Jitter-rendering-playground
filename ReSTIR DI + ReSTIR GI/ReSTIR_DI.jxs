@@ -308,14 +308,11 @@ void main() {
 	uint seed = uint(jit_in.uv.x*2918) + uint(jit_in.uv.y*91192) + uint(7723*frame);
 
 	vec3 pos = texture(posTex, jit_in.uv).xyz;
-	vec3 nor = texture(norTex, jit_in.uv).xyz;
-	vec3 alb = texture(albTex, jit_in.uv).xyz;
-
-	vec4 prevP = prevMVP * vec4(pos,1);
-    prevP /= prevP.w;
-    prevP.x = prevP.x*0.5 + 0.5;
-    prevP.y = -prevP.y*0.5 + 0.5;
-    vec2 prevUV = prevP.xy*texDim;
+	vec4 lookup0 = texture(norTex, jit_in.uv);
+	vec4 lookup1 = texture(albTex, jit_in.uv);
+	vec3 nor = lookup0.xyz;
+	vec3 alb = lookup1.xyz;
+	vec2 vel = vec2(lookup0.w, lookup1.w)*0.5*texDim;
 
     vec4 prev_reservoir = vec4(0);
 /*
@@ -327,7 +324,6 @@ void main() {
     	prev_reservoir = texture(reservoirTex, prevUV);
     }
 */
-	prev_reservoir = texture(reservoirTex, jit_in.uv);
 
     vec4 reservoir = vec4(0); //curr reservoir
 
@@ -356,6 +352,8 @@ void main() {
 
 
 	//TEMPORAL REUSE//____________________________________________________________
+
+	prev_reservoir = texture(reservoirTex, jit_in.uv - vel);
 	vec4 temporal_reservoir = vec4(0);
 
 	// combine current reservoir

@@ -1,0 +1,163 @@
+<jittershader name="default">
+	<description>Default Slab </description>
+	<param name="imgTex" type="int" default="0" filter="nearest" />
+	<param name="posTex" type="int" default="1" filter="nearest" />
+	<param name="norTex" type="int" default="2" filter="nearest" />
+	<param name="albTex" type="int" default="3" filter="nearest" />
+	<param name="accumTex" type="int" default="4" filter="nearest" />
+	<param name="texDim" type="vec2" state="TEXDIM0" />
+	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="uv" type="vec2" state="TEXCOORD" />
+	<language name="glsl" version="1.5">
+		<bind param="imgTex" program="fp" />
+		<bind param="posTex" program="fp" />
+		<bind param="norTex" program="fp" />
+		<bind param="albTex" program="fp" />
+		<bind param="accumTex" program="fp" />
+		<bind param="texDim" program="fp" />
+		<bind param="MVP" program="vp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="pos" program="vp" />
+		<bind param="uv" program="vp" />
+		<program name="vp" type="vertex"  >
+<![CDATA[
+#version 330 core
+
+in vec3 pos;
+in vec2 uv;
+out jit_PerVertex {
+	smooth vec2 uv;
+} jit_out;
+uniform mat4 MVP;
+uniform mat4 textureMatrix0;
+
+void main(void) {
+
+	gl_Position = MVP*vec4(pos, 1.);
+	jit_out.uv = vec2(textureMatrix0*vec4(uv, 0., 1.));
+}
+]]>
+
+</program>
+<program name="fp" type="fragment"  >
+
+<![CDATA[
+#version 330 core
+uniform sampler2DRect imgTex, posTex, norTex, albTex, accumTex;
+uniform vec2 texDim;
+
+in jit_PerVertex {
+	smooth vec2 uv;
+} jit_in;
+
+struct curr{
+	vec3 col;
+	vec3 pos;
+	vec3 nor;
+	vec3 alb;
+	vec2 vel;
+	float id;
+	float hlen;
+};
+
+struct prev{
+	vec3 col;
+	float id;
+	bool valid;
+};
+
+layout (location = 0) out vec4 outCol;
+layout (location = 1) out vec4 outTest;
+
+curr read_current_textures(){
+	curr c;
+	vec4 lookup0 = texture(imgTex, jit_in.uv);
+	vec4 lookup1 = texture(posTex, jit_in.uv);
+	vec4 lookup2 = texture(norTex, jit_in.uv);
+	vec4 lookup3 = texture(albTex, jit_in.uv);
+	c.col = lookup0.rgb;
+	c.hlen = texture(accumTex, jit_in.uv).w;
+	c.pos = lookup1.xyz;
+	c.id = lookup1.w;
+	c.nor = lookup2.xyz;
+	c.alb = lookup3.rgb;
+	c.vel = vec2(lookup2.w, lookup3.w);
+	return c;
+}
+
+bool valid_reprojection(curr c, out vec2 repUv){
+
+	repUv = jit_in.uv - c.vel*texDim*0.5;
+	return(repUv.x >= 0 && repUv.y >= 0 && repUv.x < texDim.x && repUv.y < texDim.y);
+}
+
+bool same_shape(float a, float b){
+	return a == b;
+}
+
+void calc_reprojection(inout curr c, inout prev p){
+
+	vec2 repUv;
+	p.col = c.col;
+	p.valid = false;
+	if( valid_reprojection(c, repUv) ){
+
+		p.id = texture(posTex, repUv).w;
+
+		if( !same_shape(c.id, p.id) ) return;
+			
+		p.col = texture(accumTex, repUv).rgb;
+		p.valid = true;	
+	}	
+	return;
+}
+
+float luminance(vec3 c){ 
+
+	return dot(c, vec3(0.299, 0.587, 0.114)); 
+}
+
+float calc_variance(in curr c){
+
+	const float radius = 2; //5x5 kernel
+	vec2 sigmaVariancePair = vec2(0.0, 0.0);
+	float sampCount = 0.0;
+	for (float y = -radius; y <= radius; y+=1.0){
+	    for (float x = -radius; x <= radius; x+=1.0){
+
+	        // Sample current point data with current uv
+	        vec3 curColor = texture(imgTex, jit_in.uv + vec2(x,y)).rgb;
+
+	        // Determine the average brightness of this sample
+	        // Using International Telecommunications Union's ITU BT.601 encoding params
+	        float samp = luminance(curColor);
+	        float sampSquared = samp * samp;
+	        sigmaVariancePair += vec2(samp, sampSquared);
+
+	        sampCount += 1.0;
+	    }
+	}
+	sigmaVariancePair /= sampCount;
+	return max(0.0, sigmaVariancePair.y - sigmaVariancePair.x * sigmaVariancePair.x);
+}
+
+void main(void) {
+
+	curr c = read_current_textures();
+	prev p;
+
+	calc_reprojection(c, p);
+
+	float weight = p.valid ? clamp(calc_variance(c)*20., 0.05, 1.) : 1.0;
+	outCol.rgb = mix(p.col, c.col, weight);
+	outCol.a = c.hlen;
+
+	outTest = vec4(calc_variance(c)*30);
+
+}
+]]>
+</program>
+</language>
+</jittershader>
