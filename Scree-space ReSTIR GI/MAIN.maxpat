@@ -40,6 +40,31 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-46",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 203.0, -48.0, 41.0, 22.0 ],
+					"presentation_linecount" : 2,
+					"text" : "fps 25"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-38",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "jit_gl_texture", "" ],
+					"patching_rect" : [ -452.0, 1575.0, 298.0, 22.0 ],
+					"text" : "jit.gl.slab @file clamp_reservoir_weights.jxs @inputs 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"id" : "obj-19",
 					"maxclass" : "newobj",
 					"numinlets" : 1,
@@ -143,7 +168,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 2325.0, -277.0, 91.0, 22.0 ],
-					"text" : "position $1 6 -4"
+					"text" : "position $1 6 -9"
 				}
 
 			}
@@ -192,7 +217,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 2254.0, -221.0, 580.0, 35.0 ],
-					"text" : "jit.gl.light render_node @direction 0 -1 0.4 @type spot @diffuse 30 20 10 @shadows 1 @shadowrange 30. @shadowblur 0. @spot_angle 120 @spot_falloff 1 @enable 0"
+					"text" : "jit.gl.light render_node @direction 0 -1 0.2 @type spot @diffuse 30 20 10 @shadows 1 @shadowrange 10. @shadowblur 0. @spot_angle 90 @spot_falloff 1 @enable 0 @shadowquality hi"
 				}
 
 			}
@@ -239,7 +264,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 287.0, -65.0, 35.0, 22.0 ],
+					"patching_rect" : [ 203.0, -88.0, 35.0, 22.0 ],
 					"text" : "fps 8"
 				}
 
@@ -455,7 +480,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1079.0, 195.0, 133.0, 22.0 ],
+					"patching_rect" : [ 1041.0, 211.0, 133.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"filename" : "concatDrawgroups.js",
 						"parameter_enable" : 0
@@ -472,7 +497,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "bang", "bang" ],
-					"patching_rect" : [ 1521.0, 197.0, 32.0, 22.0 ],
+					"patching_rect" : [ 1495.0, 141.0, 32.0, 22.0 ],
 					"text" : "t b b"
 				}
 
@@ -534,8 +559,8 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1735.0, 932.0, 75.0, 22.0 ],
-					"text" : "roughness 1"
+					"patching_rect" : [ 1735.0, 932.0, 85.0, 22.0 ],
+					"text" : "roughness 0.2"
 				}
 
 			}
@@ -1111,8 +1136,8 @@
 					"numinlets" : 8,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 1008.0, 358.0, 430.0, 22.0 ],
-					"text" : "jit.gl.pbr @shadow_hard 0.98 @mat_diffuse 1 0.1 0.1 1. @gamma_correction 0"
+					"patching_rect" : [ 1042.0, 359.0, 420.0, 22.0 ],
+					"text" : "jit.gl.pbr @shadow_hard 0.98 @mat_diffuse 1 1 0.1 1. @gamma_correction 0"
 				}
 
 			}
@@ -2633,13 +2658,12 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-109",
-					"linecount" : 3,
 					"maxclass" : "message",
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1079.0, 26.0, 178.0, 49.0 ],
-					"text" : "automatic 0, matrixoutput 2, rotatexyz -90 0 0, scale 10, position 0 2.5 0, bang"
+					"patching_rect" : [ 1074.0, 62.0, 415.0, 22.0 ],
+					"text" : "automatic 0, matrixoutput 2, rotatexyz -90 0 0, scale 3, position 0 2.5 0, bang"
 				}
 
 			}
@@ -2844,8 +2868,8 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 1903.5, 372.0, 744.0, 22.0 ],
-					"text" : "jit.gl.gridshape alb_id_node @shape torus @scale 3 @position 1.5 1. -12. @gl_color 1 0.1 0.1 1 @dim 40 40 @shader get_albedo_and_id"
+					"patching_rect" : [ 1903.5, 372.0, 738.0, 22.0 ],
+					"text" : "jit.gl.gridshape alb_id_node @shape torus @scale 3 @position -12.5 1. -5. @gl_color 1 1 0.1 1 @dim 40 40 @shader get_albedo_and_id"
 				}
 
 			}
@@ -3978,8 +4002,8 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 882.0, 466.0, 471.0, 22.0 ],
-					"text" : "jit.gl.gridshape render_node @shape torus @scale 3 @position 1.5 1. -12. @dim 40 40"
+					"patching_rect" : [ 839.0, 467.0, 475.0, 22.0 ],
+					"text" : "jit.gl.gridshape render_node @shape torus @scale 3 @position -12.5 1. -5. @dim 40 40"
 				}
 
 			}
@@ -4003,7 +4027,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 1449.0, -199.0, 676.0, 22.0 ],
-					"text" : "jit.gl.light render_node @type directional @direction 1 -1 1 @diffuse 12 8 4 @shadows 1 @shadowrange 15. @shadowblur 0."
+					"text" : "jit.gl.light render_node @type directional @direction 1 -1 1 @diffuse 12 8 4 @shadows 1 @shadowrange 20. @shadowblur 0."
 				}
 
 			}
@@ -5161,6 +5185,13 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-5", 0 ],
+					"source" : [ "obj-186", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-189", 0 ],
 					"source" : [ "obj-187", 0 ]
 				}
@@ -5408,6 +5439,13 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-106", 0 ],
+					"source" : [ "obj-38", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-40", 1 ],
 					"source" : [ "obj-39", 0 ]
 				}
@@ -5462,6 +5500,13 @@
 				"patchline" : 				{
 					"destination" : [ "obj-27", 0 ],
 					"source" : [ "obj-44", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-1", 0 ],
+					"source" : [ "obj-46", 0 ]
 				}
 
 			}
@@ -5757,7 +5802,7 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-106", 0 ],
+					"destination" : [ "obj-38", 0 ],
 					"source" : [ "obj-92", 0 ]
 				}
 
