@@ -137,7 +137,7 @@ void main()
 	
 	// Calculate ambient colour of fragment
 	occ = (1.0 - ((1.0-occ)*amnt));
-	occ = max(0.0, occ);
+	occ = clamp(occ, 0.0, 1.0);
 	outColor = vec4(occ,occ,occ,1);
 }
 

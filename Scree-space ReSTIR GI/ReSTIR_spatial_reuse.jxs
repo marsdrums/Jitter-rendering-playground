@@ -7,7 +7,6 @@
 	<param name="velTex" type="int" default="4" filter="nearest" />
 	<param name="posTex" type="int" default="5" filter="nearest" />
 	<param name="albTex" type="int" default="6" filter="nearest" />
-	<param name="prevAlbTex" type="int" default="7" filter="nearest" />
 	<param name="texDim" type="vec2" state="TEXDIM0" />
 	<param name="prevMVP" type="mat4" state="PREV_MODELVIEW_PROJECTION_MATRIX" />
 	<param name="farClip" type="float" state="FAR_CLIP" />
@@ -35,7 +34,6 @@
 		<bind param="reservoirTex" program="fp" />
 		<bind param="p_hatTex" program="fp" />
 		<bind param="albTex" program="fp" />
-		<bind param="prevAlbTex" program="fp" />
 		<bind param="prevMVP" program="fp" />
 		<bind param="farClip" program="fp" />
 
@@ -96,7 +94,7 @@ layout (location = 0) out vec4 outReservoir;
 layout (location = 1) out vec4 outPhat;
 layout (location = 2) out vec4 outBestWpos;
 
-uniform sampler2DRect colTex, norDepthTex, velTex, posTex, reservoirTex, p_hatTex, albTex, prevAlbTex;
+uniform sampler2DRect colTex, norDepthTex, velTex, posTex, reservoirTex, p_hatTex, albTex;
 uniform int frame, num_samples;
 uniform vec2 texDim;
 uniform mat4 prevMVP, invV, MV, MVP, VP, V, projmat, textureMatrix0;

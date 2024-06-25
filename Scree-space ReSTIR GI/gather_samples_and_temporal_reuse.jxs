@@ -7,7 +7,6 @@
 	<param name="prev_reservoirTex" type="int" default="4" filter="nearest" />
 	<param name="prev_best_wposTex" type="int" default="5" filter="nearest" />
 	<param name="albTex" type="int" default="6" filter="nearest" />
-	<param name="prevAlbTex" type="int" default="7" filter="nearest" />
 	<param name="texDim" type="vec2" state="TEXDIM0" />
 	<param name="prevMVP" type="mat4" state="PREV_MODELVIEW_PROJECTION_MATRIX" />
 	<param name="farClip" type="float" state="FAR_CLIP" />
@@ -33,7 +32,6 @@
 		<bind param="prev_reservoirTex" program="fp" />
 		<bind param="prev_best_wposTex" program="fp" />
 		<bind param="albTex" program="fp" />
-		<bind param="prevAlbTex" program="fp" />
 		<bind param="prevMVP" program="fp" />
 		<bind param="farClip" program="fp" />
 
@@ -92,7 +90,7 @@ layout (location = 0) out vec4 outReservoir;
 layout (location = 1) out vec4 outPhat;
 layout (location = 2) out vec4 outBestWpos;
 
-uniform sampler2DRect colTex, norDepthTex, velTex, posTex, prev_reservoirTex, prev_best_wposTex, albTex, prevAlbTex;
+uniform sampler2DRect colTex, norDepthTex, velTex, posTex, prev_reservoirTex, prev_best_wposTex, albTex;
 uniform int frame;
 uniform vec2 texDim;
 uniform mat4 prevMVP, invV, MV, MVP, VP, V, projmat, textureMatrix0;
@@ -380,7 +378,6 @@ void main(void) {
 
 			prev_reservoir.y = float(uv2index(prev_best_wpos_uv));
 			test_s = get_sample(int(prev_reservoir.y));
-			float prev_id = texelFetch(prevAlbTex, reprojected_uv).w;
 			//p_hat = length( get_radiance(this_s, test_s) );
 			p_hat = luminance( get_radiance(this_s, test_s) );
 			//if(!visible(this_s, test_s, seed) || abs(this_s.id - prev_id) > 200){

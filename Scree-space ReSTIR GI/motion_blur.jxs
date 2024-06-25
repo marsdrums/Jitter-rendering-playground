@@ -1,8 +1,7 @@
 <jittershader name="default">
 	<description>Default Slab </description>
 	<param name="imgTex" type="int" default="0" />
-	<param name="prevImgTex" type="int" default="1" />
-	<param name="velTex" type="int" default="2" />
+	<param name="velTex" type="int" default="1" />
 	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
 	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
 	<param name="pos" type="vec3" state="POSITION" />
@@ -12,7 +11,6 @@
 	<param name="delta" type="float" state="DELTA_TIME" />
 	<language name="glsl" version="1.5">
 		<bind param="imgTex" program="fp" />
-		<bind param="prevImgTex" program="fp" />
 		<bind param="velTex" program="fp" />
 		<bind param="MVP" program="vp" />
 		<bind param="textureMatrix0" program="vp" />
@@ -56,7 +54,7 @@
 			} jit_in;
 			layout (location = 0) out vec4 outColor;
 			
-			uniform sampler2DRect imgTex, prevImgTex, velTex;
+			uniform sampler2DRect imgTex, velTex;
 			uniform vec2 texDim;
 			uniform float width;
 			void main(void) {
@@ -68,12 +66,12 @@
 
 				//vec2 texel_size = 1 / texDim;
 				float speed = length(vel);
-				const int MAX_SAMPLES = 20;
+				const int MAX_SAMPLES = 10;
    				int nSamples = clamp(int(speed), 1, MAX_SAMPLES);
 
 
    				for (int i = 1; i < nSamples; ++i) {
-      				vec2 offset = vel * (float(i) / float(nSamples - 1) - 0.5)*40;
+      				vec2 offset = vel * (float(i) / float(nSamples - 1) - 0.5);
       				col += texture(imgTex, jit_in.texcoord + offset).rgb;
    				}
    				col /= float(nSamples);
