@@ -1,0 +1,85 @@
+<jittershader name="fill-flat-quads">
+	<description>Default Shader </description>
+	<param name="position" type="vec3" state="POSITION" />
+	<param name="modelViewProjectionMatrix" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="color" type="vec4" state="COLOR" />
+	<language name="glsl" version="1.5">
+		<bind param="position" program="vp" />
+		<bind param="modelViewProjectionMatrix" program="vp" />
+		<bind param="color" program="vp" />
+		<program name="vp" type="vertex">
+<![CDATA[
+#version 330 core
+uniform mat4 modelViewProjectionMatrix;
+in vec3 position;
+in vec4 color;
+
+out jit_PerVertex {
+	smooth vec4 color;	
+	flat float id;
+} jit_out;
+
+void main() {	
+	gl_Position = modelViewProjectionMatrix * vec4(position, 1.);	
+	jit_out.color = color;
+	jit_out.id = gl_InstanceID;
+}
+]]>
+		</program>
+/*
+		<program name="gp" vertices_out="4" input_type="lines_adjacency" output_type="triangle_strip" type="geometry">
+<![CDATA[
+#version 330 core
+
+layout (triangles) in;
+layout (triangle_strip, max_vertices=4) out;
+
+in jit_PerVertex {
+	smooth vec4 color;
+	flat float id;	
+} jit_in[];
+
+out jit_PerVertex {
+	smooth vec4 color;
+	flat float id;	
+};
+
+void main() {
+
+	id = jit_in[0].id;
+
+	gl_Position = gl_in[0].gl_Position;
+	color = jit_in[0].color;
+	EmitVertex();
+	
+	gl_Position = gl_in[1].gl_Position;
+	color = jit_in[1].color;
+	EmitVertex();
+	
+	gl_Position = gl_in[2].gl_Position;
+	color = jit_in[2].color;	
+	EmitVertex();
+	
+	EndPrimitive();
+}
+]]>
+		</program>
+*/
+		<program name="fp" type="fragment">
+<![CDATA[
+#version 330 core
+
+in jit_PerVertex {
+	smooth vec4 color;
+	flat float id;
+} jit_in;
+
+out vec4 color;
+
+void main() {
+	color = vec4(jit_in.color.rgb, gl_PrimitiveID);
+}	
+]]>
+		</program>
+	</language>
+</jittershader>

@@ -1,0 +1,625 @@
+<jittershader name="fill-flat-quads">
+	<description>Default Shader </description>
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="objTex" type="int" default="0" />
+	<param name="posTex" type="int" default="1" />
+	<param name="norTex" type="int" default="2" />
+	<param name="albTex" type="int" default="3" />
+	<param name="viewPort" type="vec2" state="VIEWPORT" />
+ 	<param name="objNum" type="vec2" state="TEXDIM0" />
+  	<param name="texDim" type="vec2" state="TEXDIM1" />
+ 	<param name="eye" type="vec3" state="CAMERA_POSITION" />
+ 	<param name="frame" type="int" state="FRAME" />
+ 	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+ 	<param name="prevMVP" type="mat4" state="PREV_MODELVIEW_PROJECTION_MATRIX" />
+ 	<param name="light_pos" type="vec3" default="0. 1.9 0." />
+ 	<param name="light_dir" type="vec3" default="0. -1. 0." />
+	<language name="glsl" version="1.5">
+		<bind param="pos" program="vp" />
+		<bind param="objTex" program="fp" />
+		<bind param="posTex" program="fp" />
+		<bind param="norTex" program="fp" />
+		<bind param="albTex" program="fp" />
+		<bind param="viewPort" program="fp" />
+		<bind param="objNum" program="fp" />
+		<bind param="texDim" program="fp" />
+		<bind param="texDim" program="vp" />
+		<bind param="eye" program="fp" />
+		<bind param="frame" program="fp" />
+		<bind param="MVP" program="fp" />
+		<bind param="prevMVP" program="fp" />
+		<bind param="light_pos" program="fp" />
+		<bind param="light_dir" program="fp" />
+		<program name="vp" type="vertex">
+<![CDATA[
+#version 330 core
+in vec3 pos;
+uniform vec2 texDim;
+
+out jit_PerVertex {
+	smooth vec2 uv;	
+} jit_out;
+
+void main() {	
+	gl_Position = vec4(pos.xy,0,1);	
+	jit_out.uv = (pos.xy * vec2(0.5, -0.5) + 0.5)*texDim;
+}
+]]>
+		</program>
+		<program name="fp" type="fragment">
+<![CDATA[
+#version 330 core
+#define FAR 100000
+#define BACKGROUND vec3(0)
+#define M_1_PI 0.318309886183790671538
+#define M_PI 3.14159265358979323846264338327950288
+#define roughness 0.1 //***put these as material-specific. Keep it global for the moment
+#define metalness 0.0
+
+uniform sampler2DRect objTex, posTex, norTex, albTex;
+uniform vec2 objNum, texDim, viewPort;
+uniform vec3 eye;
+uniform int frame;
+uniform mat4 MVP, prevMVP;
+uniform float num_lights;
+uniform vec3 light_pos, light_dir;
+
+in jit_PerVertex {
+	smooth vec2 uv;	
+} jit_in;
+
+out vec4 color[4];
+
+struct rayInfo{
+	vec3 o;
+	vec3 d;
+};
+
+struct rayNextInfo{
+	vec3 o;
+	vec3 d;
+};
+
+struct hitInfo{
+	float tn; //enter distance
+	float tf; //exit distance
+	vec3 t1;
+	vec3 t2;
+	vec3 n; //normal
+	vec3 p; //position
+	mat4 txi;
+	vec3 rdd;
+	vec3 roo;
+};
+
+struct objInfo{
+	vec3 p; //position
+	vec3 s; //scale
+	vec4 r; //rotation
+	mat4 txx; 
+	mat4 txi;
+};
+
+struct bestInfo{
+	float tn; //enter distance
+	float tf; //exit distance
+	vec3 t1;
+	vec3 t2;
+	vec3 n; //normal
+	vec3 p; //position
+	vec4 c; //color
+	float i;
+	mat4 txi;
+	vec3 rdd;
+	vec3 roo;
+};
+
+struct searchInfo{
+	vec3 tru;
+	vec3 finalColor;
+	uint seed;
+	float cosine;
+	vec3 V;
+	vec3 H;
+	vec3 L_pos;
+	vec3 L_dir;
+	vec3 F0;
+	vec3 F;
+	float NDF;
+	float G;
+};
+
+
+struct firstHitInfo{
+	vec3 L;
+	//vec3 x_v;
+	//vec3 x_n;
+	vec3 s_v;
+	vec3 s_n;
+	vec3 omega;
+};
+
+/*
+//***_____________________________ ReSTIR GI Functions ____________________________
+
+const float tmin = 0.001;
+const float tmax = 10000.0;
+
+void init_s(out ReservoirSample s) {
+    s.x_v = vec3(0);
+    s.n_v = vec3(0);
+    s.x_s = vec3(0);
+    s.n_s = vec3(0);
+    s.L_o = vec3(0);
+    s.f = vec3(0);
+    s.p_q = 0;
+}
+
+void init_reservoir(out Reservoir r) {
+    r.w_sum = 0;
+    r.W = 0;
+    r.m = 0;
+    init_s(r.s);
+}
+
+void update_reservoir(inout Reservoir r, const ReservoirSample s, float w_i, uint seed) {
+    r.w_sum += w_i;
+    r.m++;
+    if (RandomFloat01(seed) < w_i / r.w_sum) {
+
+        r.s = s;
+    }
+}
+
+float p_hat(const vec3 f) { return length(f); }
+
+
+uint offset(const uint pingpong) {
+    return pingpong * pc.size_x * pc.size_y;
+}
+
+
+bool similar(ReservoirSample q, ReservoirSample q_n) {
+    const float depth_threshold = 0.5;
+    const float angle_threshold = 25 * PI / 180;
+    if (q.mat_idx != q_n.mat_idx ||
+        dot(q_n.n_v, q.n_v) < cos(angle_threshold)) {
+        return false;
+    }
+    return true;
+}
+
+//***________________________________________________________________________
+*/
+#define OCTAVES 6.
+#define PI 3.14159265359
+#define INV_PI 0.3183098862
+#define TWOPI 6.28318530718 
+#define MAX_BOUNCES 1
+#define light_color vec3(30., 20., 10.)*3
+#define light_size 0.5
+
+uint wang_hash(inout uint seed){
+
+    seed = uint(seed ^ uint(61)) ^ uint(seed >> uint(16));
+    seed *= uint(9);
+    seed = seed ^ (seed >> 4);
+    seed *= uint(0x27d4eb2d);
+    seed = seed ^ (seed >> 15);
+    return seed;
+}
+ 
+float RandomFloat01(inout uint seed) { 
+	return float(wang_hash(seed)) / 4294967296.0; 
+}
+
+vec2 RandomVec201(inout uint seed) { 
+	return vec2( 	RandomFloat01(seed),
+					RandomFloat01(seed)); 
+}
+
+vec3 RandomVec301(inout uint seed) { 
+	return vec3( 	RandomFloat01(seed),
+					RandomFloat01(seed),
+					RandomFloat01(seed)); 
+}
+
+vec4 RandomVec401(inout uint seed) { 
+	return vec4( 	RandomFloat01(seed),
+					RandomFloat01(seed),
+					RandomFloat01(seed),
+					RandomFloat01(seed)); 
+}
+
+vec2 randomUnitVector2(inout uint seed){
+
+    float a = RandomFloat01(seed) * TWOPI;
+    return vec2( cos(a), sin(a) );
+}
+
+vec3 randomUnitVector3(inout uint seed){
+
+    float z = RandomFloat01(seed) * 2.0f - 1.0f;
+    float a = RandomFloat01(seed) * TWOPI;
+    float r = sqrt(1.0f - z * z);
+    float x = r * cos(a);
+    float y = r * sin(a);
+    return vec3(x, y, z);
+}
+
+//http://orbit.dtu.dk/fedora/objects/orbit:113874/datastreams/file_75b66578-222e-4c7d-abdf-f7e255100209/content
+mat3 fast_orthonormal_basis(in vec3 n)
+{
+    vec3 f, r;
+    if(n.z < -0.999999)
+    {
+        f = vec3(0 , -1, 0);
+        r = vec3(-1, 0, 0);
+    }
+    else
+    {
+    	float a = 1./(1. + n.z);
+    	float b = -n.x*n.y*a;
+    	f = vec3(1. - n.x*n.x*a, b, -n.x);
+    	r = vec3(b, 1. - n.y*n.y*a , -n.y);
+    }
+
+    float a = 1./(1. + n.z);
+    float b = -n.x*n.y*a;
+    f = vec3(1. - n.x*n.x*a, b, -n.x);
+   	r = vec3(b, 1. - n.y*n.y*a , -n.y);
+   	return mat3(r, n, f);
+
+}
+
+mat4 rotationAxisAngle( vec3 v, float angle ){
+    float s = sin( angle );
+    float c = cos( angle );
+    float ic = 1.0 - c;
+
+    return mat4( v.x*v.x*ic + c,     v.y*v.x*ic - s*v.z, v.z*v.x*ic + s*v.y, 0.0,
+                 v.x*v.y*ic + s*v.z, v.y*v.y*ic + c,     v.z*v.y*ic - s*v.x, 0.0,
+                 v.x*v.z*ic - s*v.y, v.y*v.z*ic + s*v.x, v.z*v.z*ic + c,     0.0,
+			     0.0,                0.0,                0.0,                1.0 );
+}
+
+mat4 translate( float x, float y, float z ){
+    return mat4( 1.0, 0.0, 0.0, 0.0,
+				 0.0, 1.0, 0.0, 0.0,
+				 0.0, 0.0, 1.0, 0.0,
+				 x,   y,   z,   1.0 );
+}
+
+// axis aligned box centered at the origin, with size boxSize
+float box_intersection_shadow(vec3 ro, vec3 rd, in objInfo obj ) {
+    //vec3 n = ray.invd*ray.o;   // can precompute if traversing a set of aligned boxes
+    // convert from ray to box space
+	vec3 rdd = (obj.txx*vec4(rd,0.0)).xyz;
+	vec3 roo = (obj.txx*vec4(ro,1.0)).xyz;
+
+	// ray-box intersection in box space
+    vec3 m = 1.0/rdd;
+    vec3 n = m*roo;
+    vec3 k = abs(m)*obj.s;
+    vec3 t1 = -n - k;
+    vec3 t2 = -n + k;
+    float tn = max( max( t1.x, t1.y ), t1.z );
+    float tf = min( min( t2.x, t2.y ), t2.z );
+    if((tn <= tf) && (tf >= 0.0)) return tn;
+    return FAR;
+    //if( hit.tn > hit.tf || hit.tf < 0.0) return false; // no intersection
+    //return true;
+}
+
+// axis aligned box centered at the origin, with size boxSize
+bool box_intersection( in rayInfo ray, out hitInfo hit, in objInfo obj ) {
+    //vec3 n = ray.invd*ray.o;   // can precompute if traversing a set of aligned boxes
+    // convert from ray to box space
+	hit.rdd = (obj.txx*vec4(ray.d,0.0)).xyz;
+	hit.roo = (obj.txx*vec4(ray.o,1.0)).xyz;
+
+	// ray-box intersection in box space
+    vec3 m = 1.0/hit.rdd;
+    vec3 n = m*hit.roo;
+    vec3 k = abs(m)*obj.s;
+    hit.t1 = -n - k;
+    hit.t2 = -n + k;
+    hit.tn = max( max( hit.t1.x, hit.t1.y ), hit.t1.z );
+    hit.tf = min( min( hit.t2.x, hit.t2.y ), hit.t2.z );
+    hit.txi = obj.txi; //this could be better
+    return (hit.tn <= hit.tf) && (hit.tf >= 0.0);
+    //if( hit.tn > hit.tf || hit.tf < 0.0) return false; // no intersection
+    //return true;
+}
+
+void get_obj_info(out objInfo obj, in float i){
+	obj.p = texture(objTex, vec2(i, 0.5)).xyz;
+	obj.r = texture(objTex, vec2(i, 1.5));
+	obj.s = texture(objTex, vec2(i, 2.5)).xyz;
+
+    // rotate and translate box	
+	mat4 rot = rotationAxisAngle( normalize(obj.r.xyz), obj.r.w );
+	mat4 tra = translate( obj.p.x, obj.p.y, obj.p.z );
+	obj.txi = tra * rot; 
+	obj.txx = inverse( obj.txi );
+}
+
+void update_best(inout bestInfo bes, in hitInfo hit, in float i){
+
+	if(bes.tn < hit.tn) return;
+
+	bes.tn = hit.tn;
+	bes.tf = hit.tf;
+	bes.t1 = hit.t1;
+	bes.t2 = hit.t2;
+	bes.txi = hit.txi;
+	bes.rdd = hit.rdd;
+	bes.i = i;
+}
+
+void get_normal_position_color(inout bestInfo bes, in rayInfo ray){
+
+	bes.c = texture(objTex, vec2(bes.i, 3.5));
+	bes.p = ray.o + ray.d*bes.tn; //to avoid landing exactly on the surface
+    bes.n = (bes.tn > 0.0) ?	step(vec3(bes.tn),bes.t1) : // ro ouside the box
+                           		step(bes.t2,vec3(bes.tf));  // ro inside the box
+    bes.n = (bes.txi * vec4(-sign(bes.rdd)*bes.n,0.0)).xyz;
+    bes.p += bes.n * 0.01;
+    //bes.n *= -sign(ray.d);
+}
+
+void update_color(in bestInfo bes, inout searchInfo sea){
+
+	sea.finalColor += max(vec3(0), bes.c.rgb - 1)*sea.tru; //use albedo above 1 as emitter
+	sea.tru *= min(vec3(1), bes.c.rgb)*sea.cosine;
+}
+
+void update_ray(inout rayInfo ray, in bestInfo bes, inout searchInfo sea){
+
+	ray.o = bes.p;
+	ray.d = normalize(bes.n + randomUnitVector3(sea.seed));
+	//ray.d *= dot(ray.d, bes.n) > 0.0 ? 1 : -1;
+	ray.o += ray.d * 1e-5;
+	sea.cosine = dot(ray.d, bes.n);
+}
+
+bool shadow_ray(vec3 ro, vec3 dir, float dist, inout objInfo obj){
+
+	ro += dir*1e-5;
+	for(float i = objNum.x-0.5 - 1; i >= 0.0; i-=1.0){ //-1 to exclude the light as solid object ***TO REMOVE LATER
+		get_obj_info(obj, i);
+		if( box_intersection_shadow(ro, dir, obj) < (dist + 2*1e-5) ) return false;
+	}
+	return true;
+}
+
+/*
+vec3 read_stbn(){
+
+	vec2 uv = mod(jit_in.uv, vec2(128));
+	float mFrame = mod(float(frame), 64);
+	vec2 offset = vec2(0.0);	//vec2(	mod(mFrame, 8), 
+								//		floor(mFrame/ 8)) * 128;
+	return texture(randTex, mod(gl_FragCoord.xy, vec2(128))).xyz;
+}
+*/
+vec3 fresnelSchlick(float cosTheta, vec3 F0) {
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+float distributionGGX(vec3 N, vec3 H, float rou) {
+    float a = rou * rou;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH * NdotH;
+
+    float num = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = M_PI * denom * denom; 
+
+    return num / denom;
+}
+
+float geometrySchlickGGX(float NdotV, float rou) {
+    float r = (rou + 1.0);
+    float k = (r * r) / 8.0;
+
+    float num = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return num / denom;
+}
+
+float geometrySmith(vec3 N, vec3 V, vec3 L, float rou) {
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2 = geometrySchlickGGX(NdotV, rou);
+    float ggx1 = geometrySchlickGGX(NdotL, rou);
+
+    return ggx1 * ggx2;
+}
+
+
+void get_direct_light(in rayInfo ray, in bestInfo bes, inout searchInfo sea, inout objInfo obj){
+
+	sea.V = normalize(ray.o - eye); //view vector
+	sea.L_pos = (RandomFloat01(sea.seed)*2 - 1)*vec3(light_size, 0., light_size) + light_pos; // light position
+	sea.L_dir = normalize(sea.L_pos - ray.o); // light direction
+	sea.H = normalize(sea.V + sea.L_dir); //half vector
+    // Fresnel term
+    sea.F0 = mix(vec3(0.04), bes.c.rgb, metalness);
+    sea.F = fresnelSchlick( max( dot(sea.H, sea.V), 0.0 ), sea.F0 );
+
+    // Normal Distribution Function (NDF)
+    sea.NDF = distributionGGX(bes.n, sea.H, roughness);
+
+    // Geometry function
+    sea.G = geometrySmith(bes.n, sea.V, sea.L_dir, roughness);
+
+    // Cook-Torrance BRDF
+    vec3 numerator = sea.NDF * sea.G * sea.F;
+    float denominator = 4.0 * max(dot(bes.n, sea.V), 0.0) * max(dot(bes.n, sea.L_dir), 0.0) + 0.0001;
+    vec3 specular = numerator / denominator;
+
+    float pdf = sea.NDF * max(0.0, dot(bes.n, sea.H)) / ( 4 * max(0.0, dot(sea.L_dir, sea.H)) );
+    
+	//vec3 point_on_light = (RandomFloat01(sea.seed)*2 - 1)*vec3(light_size, 0., light_size) + light_pos;
+	//insert light direction rejection
+	vec3 diff = sea.L_pos - ray.o;
+	float dist2 = dot(diff, diff);
+	float dist = sqrt(dist2);
+	//vec3 dir = diff / dist;
+
+	float G = max(0.0, dot(bes.n, diff)) / dist2;
+	if(G > 0.0){
+
+		float light_pdf = 1 / (light_size * G);
+		float brdf_pdf = pdf;
+		float w = light_pdf / (light_pdf + brdf_pdf);
+		vec3 brdf = bes.c.rgb;
+		if(shadow_ray(ray.o, sea.L_dir, dist, obj)){
+			vec3 Le = light_color; //*** substitute the fixed light color with the index of an emitting object
+			sea.finalColor += sea.finalColor += sea.tru * (Le * w * brdf) / light_pdf;
+		}
+	}
+}
+
+void raytrace( vec3 pos, vec3 nor, vec4 alb , inout searchInfo sea, inout firstHitInfo fhi) {
+
+	objInfo obj;
+	hitInfo hit;
+	rayInfo ray;
+	rayNextInfo rayNext;
+	bestInfo bes;
+
+	sea.tru = vec3(1); //modulate by albedo in the shading pass alb.rgb;
+	sea.finalColor = vec3(0);
+
+	ray.o = pos;
+
+	bes.n = nor;
+	bes.c = alb;
+
+
+	sea.cosine = 1;//dot(ray.d, bes.n); //the first bounce the cosine 
+
+	for(int s = 0; s < MAX_BOUNCES; s++){
+
+		//if(s > 0){ //remove comment to skip direct lighting
+
+			// NEE
+			get_direct_light(ray, bes, sea, obj);		
+		//}
+
+		//BRDF
+
+		vec3 R = reflect( normalize(ray.o - eye), bes.n);
+		if(s == 0){
+
+			ray.d = normalize(R + randomUnitVector3(sea.seed)*roughness);//normalize(TBN * read_stbn());
+
+		} else {
+
+			ray.d = normalize(bes.n + randomUnitVector3(sea.seed));
+		}
+		
+		//ray.d = randomUnitVector3(sea.seed);
+		//ray.d *= dot(ray.d, bes.n) > 0.0 ? 1.0 : 0.0;
+		//ray.d *= dot(ray.d, nor) > 0.0 ? 1 : -1;
+		ray.o += ray.d*0.002;
+
+		vec3 brdf = bes.c.rgb / PI;
+
+		bes.tn = FAR;
+
+		//find closest hit
+		for(float i = objNum.x-0.5; i >= 0.0; i-=1.0){
+			get_obj_info(obj, i);
+			if(box_intersection(ray, hit, obj)){
+				update_best(bes, hit, i);
+			}
+		}
+
+		//if missed return
+		if(bes.tn == FAR) return;
+
+		//get hit info
+		get_normal_position_color(bes, ray);
+
+		float brdf_pdf = INV_PI;
+
+		//if the ray hit a light
+		if(bes.c.a > 0.0){
+			float G = max(0.0, dot(ray.d, bes.n)) / (bes.tn*bes.tn);
+			if(G <= 0.0) break;
+
+			float light_pdf = 1 / (light_size * G);
+			float w = brdf_pdf / (light_pdf + brdf_pdf);
+			vec3 Le = bes.c.rgb*bes.c.a;
+			sea.finalColor += sea.tru * (Le * w * brdf) / brdf_pdf;
+		}
+
+		if(s == 0){ //if that's the first bounce
+			fhi.s_v = bes.p;
+			fhi.s_n = bes.n;
+			fhi.omega = ray.d;
+		}
+
+		sea.tru *= brdf / brdf_pdf;
+		//update_color(bes, sea);
+
+		update_ray(ray, bes, sea);
+
+	}
+}
+
+vec4 updateReservoir(vec4 reservoir, float pathToFollow, float weight, float c, inout uint seed)
+{
+	// Algorithm 2 of ReSTIR paper
+	reservoir.x = reservoir.x + weight; // r.w_sum
+	reservoir.z = reservoir.z + c; // r.M
+	if (RandomFloat01(seed) < weight / reservoir.x) {
+		reservoir.y = pathToFollow; // r.y
+	}
+	return reservoir;
+}
+
+void main() {
+
+
+	vec3 pos = texture(posTex, jit_in.uv).xyz; //G-buffer pos
+	vec3 nor = texture(norTex, jit_in.uv).xyz; //G-buffer nor
+	vec4 alb = texture(albTex, jit_in.uv);
+
+	searchInfo sea;
+	firstHitInfo fhi;
+
+	uint firstSeed = uint(jit_in.uv.x*2918) + uint(jit_in.uv.y*91192) + uint(7723*frame);
+	sea.seed = firstSeed;
+
+	raytrace(pos, nor, alb, sea, fhi);
+
+   	//vec3 diff = fhi.s_v - pos;
+   	//float dist2 = dot(diff, diff);
+   	float cosine = dot(-fhi.omega, fhi.s_v);//*dot(nor, normalize(fhi.s_v - pos)); //visibility term to weight the reservoir
+   	float pdf = dot(fhi.omega, nor)*INV_PI;
+	float p_hat = length(sea.finalColor)*cosine;   //you can remove the reservoir from here
+	float w = p_hat / pdf;
+	
+	vec4 reservoir = vec4(0); //curr reservoir     
+	//reservoir = updateReservoir(reservoir, float(firstSeed), p_hat, 1, sea.seed);
+	reservoir = updateReservoir(reservoir, 0, w, 1, sea.seed);
+	//reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
+	reservoir.w = p_hat == 0 ? 0.0 : reservoir.x / (reservoir.z * p_hat);
+	color[0] = reservoir;
+	color[1] = vec4(sea.finalColor, 1);
+	color[2] = vec4(fhi.s_v, cosine);
+	color[3] = vec4(fhi.s_n, pdf);
+
+
+
+}	
+]]>
+		</program>
+	</language>
+</jittershader>

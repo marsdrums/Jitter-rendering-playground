@@ -1,0 +1,73 @@
+<jittershader name="default">
+	<description>Default Slab </description>
+	<param name="idTex" type="int" default="0" filter="nearest" />
+	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="uv" type="vec2" state="TEXCOORD" />
+	<language name="glsl" version="1.5">
+		<bind param="idTex" program="fp" />
+		<bind param="MVP" program="vp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="pos" program="vp" />
+		<bind param="uv" program="vp" />
+		<program name="vp" type="vertex"  >
+<![CDATA[
+#version 330 core
+
+in vec3 pos;
+in vec2 uv;
+out jit_PerVertex {
+	smooth vec2 uv;
+} jit_out;
+uniform mat4 MVP;
+uniform mat4 textureMatrix0;
+
+void main(void) {
+	gl_Position = MVP*vec4(pos, 1.);
+	jit_out.uv = vec2(textureMatrix0*vec4(uv, 0., 1.));
+}
+]]>
+</program>
+
+<program name="fp" type="fragment"  >
+<![CDATA[
+#version 330 core
+
+in jit_PerVertex {
+	smooth vec2 uv;
+} jit_in;
+layout (location = 0) out vec4 outColor;
+
+uniform sampler2DRect idTex;
+
+void main(void) {
+
+	float this_id = texture(idTex, jit_in.uv).w;
+
+	const vec2 offset[8] = vec2[]	(	vec2(-1, -1),
+										vec2(0, -1),
+										vec2(+1, -1),
+										vec2(-1, 0),
+										vec2(+1, 0),
+										vec2(-1, 1),
+										vec2(0, 1),
+										vec2(+1, 1));
+
+	vec2 final_uv_offset = vec2(0.0);
+	float valid_uvs = 1;
+	for(int i = 0; i < 8; i++){
+		if(texture(idTex, jit_in.uv + offset[i]).w == this_id){
+			final_uv_offset += offset[i];
+			valid_uvs += 1;
+		}		
+	}
+	
+	final_uv_offset /= valid_uvs;
+	outColor = vec4(final_uv_offset, 0, 1);
+
+}
+]]>
+</program>
+</language>
+</jittershader>
