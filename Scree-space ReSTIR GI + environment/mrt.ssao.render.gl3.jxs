@@ -1,0 +1,142 @@
+<jittershader name="mrt.simple.render.jxs">
+	<param name="tex_normals" type="int" default="0" />
+	<param name="tex_rand" type="int" default="1" />
+	<texture file="random-tex.png" type="float16" unit="1" rectangle="0" filter="none none" wrap="repeat repeat"/>	
+	<param name="projmat" type="mat4" state="CAM_PROJECTION_MATRIX" />
+	<param name="farDistance" type="float" state="FAR_CLIP" />
+	<param name="farCorner" type="vec3" state="FAR_CORNER" />	
+	<param name="intensity" type="float" default="10.0" />
+	<param name="amnt" type="float" default="1.0" />
+	<param name="radius" type="float" default="0.2125" />
+	<param name="modelViewProjectionMatrix" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="position" type="vec3" state="POSITION" />
+
+	<language name="glsl" version="1.5">
+		<bind param="modelViewProjectionMatrix" program="vp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="textureMatrix0" program="fp" />
+		<bind param="position" program="vp" />
+		<bind param="farCorner" program="vp" />			
+		<bind param="tex_normals" program="fp" />		
+		<bind param="tex_rand" program="fp" />		
+		<bind param="projmat" program="fp" />		
+		<bind param="farDistance" program="fp" />
+		<bind param="intensity" program="fp" />		
+		<bind param="amnt" program="fp" />				
+		<bind param="radius" program="fp" />				
+		<program name="vp" type="vertex">
+<![CDATA[
+#version 330 core
+
+in vec3 position;
+
+out vec2 texcoord_rect;
+out vec2 texcoord;
+out vec3 ray;
+
+uniform vec3 farCorner;
+uniform mat4 modelViewProjectionMatrix;
+uniform mat4 textureMatrix0;
+
+void main()
+{
+	gl_Position = modelViewProjectionMatrix*vec4(position, 1.);
+	texcoord.x = 0.5 * (1. + gl_Position.x);
+	texcoord.y = 0.5 * (1. + gl_Position.y);
+	texcoord_rect = vec2(textureMatrix0 * vec4(texcoord, 1,1));
+	ray = farCorner * vec3(gl_Position.xy, 1);
+}
+
+]]>		
+		</program>
+		<program name="fp" type="fragment">
+<![CDATA[
+#version 330 core
+
+in vec2 texcoord_rect;
+in vec2 texcoord;
+in vec3 ray;
+
+layout (location = 0) out vec4 outColor;
+
+uniform sampler2DRect tex_normals;
+uniform sampler2D tex_rand;
+uniform mat4 projmat;
+uniform float farDistance;
+uniform float intensity;
+uniform float amnt;
+uniform float radius;
+
+uniform mat4 textureMatrix0;
+
+vec3 computeZ(vec2 xy)
+{
+    return vec3(xy, sqrt(1.0 - dot(xy, xy)));
+}
+
+void main()
+{
+	#define MAX_RAND_SAMPLES 14
+	vec3 RAND_SAMPLES[MAX_RAND_SAMPLES] = vec3[] (
+			vec3(1, 0, 0),
+			vec3(	-1, 0, 0),
+			vec3(0, 1, 0),
+			vec3(0, -1, 0),
+			vec3(0, 0, 1),
+			vec3(0, 0, -1),
+			normalize(vec3(1, 1, 1)),
+			normalize(vec3(-1, 1, 1)),
+			normalize(vec3(1, -1, 1)),
+			normalize(vec3(1, 1, -1)),
+			normalize(vec3(-1, -1, 1)),
+			normalize(vec3(-1, 1, -1)),
+			normalize(vec3(1, -1, -1)),
+			normalize(vec3(-1, -1, -1))
+	);
+	
+	vec4 norm_depth = texture(tex_normals, texcoord_rect);
+	float depth = norm_depth.w;
+
+	vec3 viewNorm = norm_depth.xyz;
+	
+	// random normal lookup from a texture and expand to [-1..1]
+	vec3 randN = texture(tex_rand, texcoord * 24).xyz * 2.0 - 1.0;
+
+	// Calculate depth of fragment;
+	vec3 viewPos = normalize(ray) * farDistance * depth;
+	
+	// accumulated occlusion factor
+	#define NUM_BASE_SAMPLES 6	
+	float occ = 0;
+	for (int i = 0; i < NUM_BASE_SAMPLES; ++i) {
+		// reflected direction to move in for the sphere
+		// (based on random samples and a random texture sample)
+		// bias the random direction away from the normal
+		// this tends to minimize self occlusion
+		vec3 randomDir = reflect(RAND_SAMPLES[i], randN) + viewNorm;
+
+		// move new view-space position back into texture space
+		//#define RADIUS 0.2125
+		vec4 nuv = (projmat * vec4(viewPos.xyz + randomDir * radius, 1));
+		nuv.xy /= nuv.w;
+		vec2 nuv_rect = vec2(textureMatrix0 * vec4((nuv.xy*0.5 +0.5), 1,1));
+		
+		// compute occlusion based on the (scaled) Z difference
+		float zd = clamp(farDistance * (depth - texture(tex_normals, nuv_rect).w), 0.0, 1.0);
+		
+		// this is a sample occlusion function, you can always play with
+		// other ones, like 1.0 / (1.0 + zd * zd) and stuff
+		occ += clamp(pow(1.0 - zd, 1.+intensity) + zd, 0.0, 1.0);
+	}
+	occ /= NUM_BASE_SAMPLES;
+	
+	// Calculate ambient colour of fragment
+	occ = (1.0 - ((1.0-occ)*amnt));
+	outColor = vec4(occ,occ,occ,1);
+}
+
+]]>		
+		</program>		
+	</language>	
+</jittershader>

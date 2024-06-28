@@ -1,0 +1,80 @@
+<jittershader name="default">
+	<description>Default Slab </description>
+	<param name="tex0" type="int" default="0" filter="nearest" />
+	<param name="tex1" type="int" default="1" filter="nearest" />
+	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="uv" type="vec2" state="TEXCOORD" />
+	<param name="width" type="int" default="1" />
+	<language name="glsl" version="1.5">
+		<bind param="tex0" program="fp" />
+		<bind param="tex1" program="fp" />
+		<bind param="MVP" program="vp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="pos" program="vp" />
+		<bind param="uv" program="vp" />
+		<bind param="width" program="fp" />
+		<program name="vp" type="vertex"  >
+<![CDATA[
+#version 330 core
+
+in vec3 pos;
+in vec2 uv;
+in vec4 color;
+out jit_PerVertex {
+	vec2 uv;
+} jit_out;
+uniform mat4 MVP;
+uniform mat4 textureMatrix0;
+
+void main(void) {
+	gl_Position = MVP*vec4(pos, 1.);
+	jit_out.uv = vec2(textureMatrix0*vec4(uv, 0., 1.));
+}
+]]>
+</program>
+
+<program name="fp" type="fragment"  >
+<![CDATA[
+#version 330 core
+
+in jit_PerVertex {
+	vec2 uv;
+} jit_in;
+layout (location = 0) out vec4 outColor;
+
+uniform sampler2DRect tex0, tex1;
+uniform float scale;
+uniform int width;
+void main(void) {
+
+	vec3 minColor = vec3(9999.0); 
+	vec3 maxColor = vec3(-9999.0);
+	vec3 test_color;
+	test_color = texelFetch(tex1, ivec2(jit_in.uv) + ivec2(-1,-1)).rgb;
+	minColor = min(minColor, test_color); maxColor = max(maxColor, test_color);
+	test_color = texelFetch(tex1, ivec2(jit_in.uv) + ivec2(0,-1)).rgb;
+	minColor = min(minColor, test_color); maxColor = max(maxColor, test_color);
+	test_color = texelFetch(tex1, ivec2(jit_in.uv) + ivec2(+1,-1)).rgb;
+	minColor = min(minColor, test_color); maxColor = max(maxColor, test_color);
+	test_color = texelFetch(tex1, ivec2(jit_in.uv) + ivec2(-1,0)).rgb;
+	minColor = min(minColor, test_color); maxColor = max(maxColor, test_color);
+	test_color = texelFetch(tex1, ivec2(jit_in.uv) + ivec2(+1,0)).rgb;
+	minColor = min(minColor, test_color); maxColor = max(maxColor, test_color);
+	test_color = texelFetch(tex1, ivec2(jit_in.uv) + ivec2(-1,+1)).rgb;
+	minColor = min(minColor, test_color); maxColor = max(maxColor, test_color);
+	test_color = texelFetch(tex1, ivec2(jit_in.uv) + ivec2(0,+1)).rgb;
+	minColor = min(minColor, test_color); maxColor = max(maxColor, test_color);
+	test_color = texelFetch(tex1, ivec2(jit_in.uv) + ivec2(+1,+1)).rgb;
+	minColor = min(minColor, test_color); maxColor = max(maxColor, test_color);
+
+
+	vec4 lookup = texelFetch(tex0, ivec2(jit_in.uv));
+	outColor.rgb = clamp( lookup.rgb, minColor, maxColor); 
+	outColor.a = lookup.a;
+}
+]]>
+</program>
+</language>
+</jittershader>

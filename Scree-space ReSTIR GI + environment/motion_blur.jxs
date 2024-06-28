@@ -1,0 +1,91 @@
+<jittershader name="default">
+	<description>Default Slab </description>
+	<param name="imgTex" type="int" default="0" />
+	<param name="velTex" type="int" default="1" />
+	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="texcoord" type="vec2" state="TEXCOORD" />
+	<param name="texDim" type="vec2" state="TEXDIM0" />
+	<param name="width" type="float" default="1" />
+	<param name="delta" type="float" state="DELTA_TIME" />
+	<language name="glsl" version="1.5">
+		<bind param="imgTex" program="fp" />
+		<bind param="velTex" program="fp" />
+		<bind param="MVP" program="vp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="pos" program="vp" />
+		<bind param="texcoord" program="vp" />
+		<bind param="texDim" program="fp" />
+		<bind param="width" program="fp" />
+		<bind param="delta" program="vp" />
+		<program name="vp" type="vertex"  >
+		<![CDATA[
+			#version 330 core
+			
+			in vec3 pos;
+			in vec2 texcoord;
+
+			out jit_PerVertex {
+				vec2 texcoord;
+				flat float vel_amt;
+			} jit_out;
+			uniform mat4 MVP;
+			uniform mat4 textureMatrix0;
+			uniform float delta;
+			
+			void main(void) {
+				gl_Position = MVP*vec4(pos, 1.);
+				float fps = 1/delta;
+				float target_fps = 25;
+				jit_out.vel_amt = fps / target_fps;
+				jit_out.texcoord = vec2(textureMatrix0*vec4(texcoord, 0., 1.));
+			}
+		]]>
+		</program>
+		
+		<program name="fp" type="fragment"  >
+		<![CDATA[
+			#version 330 core
+			
+			in jit_PerVertex {
+				vec2 texcoord;
+				flat float vel_amt;
+			} jit_in;
+			layout (location = 0) out vec4 outColor;
+			
+			uniform sampler2DRect imgTex, velTex;
+			uniform vec2 texDim;
+			uniform float width;
+			void main(void) {
+
+				vec2 vel = texelFetch(velTex, ivec2(jit_in.texcoord)).xy;
+				vec2 vel_rect = vel * jit_in.vel_amt * texDim;
+
+				vec3 col = texelFetch(imgTex, ivec2(jit_in.texcoord)).rgb;
+
+				//vec2 texel_size = 1 / texDim;
+				float speed = length(vel_rect);
+				const int MAX_SAMPLES = 10;
+   				int nSamples = clamp(int(speed), 1, MAX_SAMPLES);
+   				float tot_weight = 0;
+
+   				for (int i = 1; i < nSamples; ++i) {
+      				vec2 offset = vel_rect * (float(i) / float(nSamples - 1) - 0.5);
+      				vec2 uv = jit_in.texcoord + offset;
+      				vec2 prev_vel = texture(velTex, uv).ba;
+      				float vel_diff = length(vel - prev_vel);
+      				float weight = 1 - min(1.0, clamp( (vel_diff-0.01), 0.0, 1.0 ) * 50);
+      				col += texture(imgTex, uv).rgb * weight;
+      				tot_weight += weight;
+   				}
+   				col /= tot_weight + 1;
+
+				outColor = vec4(col, 1);
+
+
+			}
+		]]>
+		</program>
+	</language>
+</jittershader>
