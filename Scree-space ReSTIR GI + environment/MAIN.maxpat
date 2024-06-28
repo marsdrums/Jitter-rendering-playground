@@ -45,7 +45,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ -427.0, 1736.0, 298.0, 22.0 ],
+					"patching_rect" : [ -468.0, 1750.0, 298.0, 22.0 ],
 					"text" : "jit.gl.slab @file clamp_reservoir_weights.jxs @inputs 1"
 				}
 
@@ -1158,7 +1158,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ -455.0, 1639.0, 298.0, 22.0 ],
+					"patching_rect" : [ -469.0, 1639.0, 298.0, 22.0 ],
 					"text" : "jit.gl.slab @file clamp_reservoir_weights.jxs @inputs 1"
 				}
 
@@ -1182,7 +1182,7 @@
 					"numinlets" : 3,
 					"numoutlets" : 3,
 					"outlettype" : [ "jit_gl_texture", "jit_gl_texture", "" ],
-					"patching_rect" : [ -454.0, 1583.0, 454.0, 22.0 ],
+					"patching_rect" : [ -468.0, 1583.0, 454.0, 22.0 ],
 					"text" : "jit.gl.slab @file reservoir_random_permutation.jxs @outputs 2 @inputs 3 @width 10"
 				}
 
@@ -4325,7 +4325,7 @@
 					"numinlets" : 8,
 					"numoutlets" : 4,
 					"outlettype" : [ "jit_gl_texture", "jit_gl_texture", "jit_gl_texture", "" ],
-					"patching_rect" : [ -454.0, 1697.0, 516.0, 22.0 ],
+					"patching_rect" : [ -468.0, 1697.0, 516.0, 22.0 ],
 					"text" : "jit.gl.slab @file ReSTIR_spatial_reuse.jxs @inputs 8 @outputs 3 @radius 10 @num_samples 5"
 				}
 
@@ -4337,7 +4337,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ -320.0, 1270.0, 298.0, 22.0 ],
+					"patching_rect" : [ -384.0, 1261.0, 298.0, 22.0 ],
 					"text" : "jit.gl.slab @file clamp_reservoir_weights.jxs @inputs 1"
 				}
 
@@ -5594,7 +5594,7 @@
 					"numinlets" : 8,
 					"numoutlets" : 3,
 					"outlettype" : [ "jit_gl_texture", "jit_gl_texture", "" ],
-					"patching_rect" : [ -454.0, 1525.0, 516.0, 22.0 ],
+					"patching_rect" : [ -468.0, 1525.0, 516.0, 22.0 ],
 					"text" : "jit.gl.slab @file ReSTIR_spatial_reuse.jxs @inputs 8 @outputs 2 @radius 10 @num_samples 5"
 				}
 
@@ -5606,7 +5606,7 @@
 					"numinlets" : 8,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ -494.714285714285722, 1888.0, 318.0, 22.0 ],
+					"patching_rect" : [ -510.714285714285722, 1852.0, 318.0, 22.0 ],
 					"text" : "jit.gl.slab @file ReSTIR_resolve.jxs @inputs 8 @outputs 1"
 				}
 

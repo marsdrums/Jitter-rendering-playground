@@ -117,7 +117,7 @@ uint get_rng_seed(){
 	return uint(jit_in.uv.x*371783) + uint(jit_in.uv.y*288472) + uint(frame*377112);
 }
 
-vec2 get_sample_uv(inout uint seed, in float radius, in int iteration){
+vec2 get_sample_uv(inout uint seed){
 
 	//float angle = RandomFloat01(seed)*TWOPI;
 	//float ra = sqrt(RandomFloat01(seed))*radius;
@@ -134,11 +134,18 @@ vec2 cartesianToUv(vec3 cartesian) {
 
 vec2 get_sample_uv_for_env(inout uint seed, in vec3 nor){
 
+	vec3 rand_dir = randomUnitVector3(seed);
+	rand_dir *= dot(rand_dir, nor) > 0.0 ? 1 : -1;
+	vec2 uv = vec2(atan(rand_dir.z, rand_dir.x), asin(rand_dir.y));
+    uv *= vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
+    uv += 0.5;
+    uv *= mapSize;
+    return uv;
 	//return vec2(RandomFloat01(seed), RandomFloat01(seed))*mapSize;
 	//vec3 wNor = (invV * vec4(nor,0)).xyz;
 	//vec2 center = cartesianToUv(wNor) + 2;
 	//vec2 randOffset = 0.5*(vec2(RandomFloat01(seed)-0.5, RandomFloat01(seed))-0.5);
-	return vec2(RandomFloat01(seed), RandomFloat01(seed))*mapSize;//mod(center + randOffset, vec2(1.0))*mapSize;
+	//return vec2(RandomFloat01(seed), RandomFloat01(seed))*mapSize;//mod(center + randOffset, vec2(1.0))*mapSize;
 }
 
 bool valid_uv(in vec2 uv){
@@ -331,7 +338,7 @@ vec4 gather_samples(in sample this_s, inout uint seed, out float p_hat){
 	for (int i = 0; i < M; i++)
 	{
 		bool found_valid_uv = false;
-		sample_uv = get_sample_uv(seed, radius, i);
+		sample_uv = get_sample_uv(seed);
 	    sample_index = int(uv2index(sample_uv));
 	    sample test_s = get_sample_pos_col(sample_index);
 
