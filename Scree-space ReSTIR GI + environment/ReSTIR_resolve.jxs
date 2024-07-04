@@ -139,7 +139,7 @@ void wrap(inout vec2 uv){
 }
 
 int uv2index(in vec2 uv){
-	//uv -= 0.5;
+	uv = floor(uv);
 	return int(uv.x + uv.y*texDim.x);
 }
 
@@ -346,8 +346,12 @@ void main(void) {
 
 	outColor = vec4(0,0,0,1);
 
-	float radius = mix(10, 10, min(1.0, reservoir.z*0.001));
-	int NUM_SAMPLES = int(mix(4, 4, min(1.0, reservoir.z*0.001)));
+	//float occlusion = texelFetch(albTex, ivec2(jit_in.uv)).w - 0.2;
+	//occlusion = max(0.0, occlusion);
+	//occlusion *= occlusion;
+	float occlusion = 1;
+	float radius = mix(1, 1, min(1.0, reservoir.z*0.001));
+	int NUM_SAMPLES = int(mix(10, 10, min(1.0, reservoir.z*0.001)));
 	float weight = 1;
 	ivec2 uv_offset[8] = ivec2[](	ivec2(-1,-1), 
 									ivec2(0, -1), 
@@ -364,8 +368,8 @@ void main(void) {
 		for(int i = 0; i < 1; i++){ //search for valid uvs (not outside the viewport);
 
 			float rand_radius = sqrt(RandomFloat01(seed))/this_s.depth;
-   			float rand_angle = RandomFloat01(seed)*TWOPI;
-   			vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*0.001*radius;
+   			float rand_angle = RandomFloat01(seed)*TWOPI;//
+   			vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*0.001*radius*occlusion;
    			disk = TBN * disk;
    			disk += this_s.pos;
    			vec4 proj_disk = projmat * vec4(disk, 1);
@@ -385,7 +389,7 @@ void main(void) {
 		if(!valid_uv) continue;
 		
 		vec4 reservoir = texelFetch(reservoirTex, randUV);
-		float angle_diff = 1;//dot(this_s.nor, texelFetch(norDepthTex, randUV).xyz);
+		float angle_diff = dot(this_s.nor, texelFetch(norDepthTex, randUV).xyz);
 		float sample_depth = texelFetch(norDepthTex, randUV).w;
 		if(angle_diff < 0) continue;
 

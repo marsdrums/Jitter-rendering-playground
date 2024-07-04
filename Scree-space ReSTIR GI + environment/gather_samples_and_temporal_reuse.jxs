@@ -153,7 +153,7 @@ bool valid_uv(in vec2 uv){
 }
 
 int uv2index(in vec2 uv){
-	uv -= 0.5;
+	uv = floor(uv);
 	return int(uv.x + uv.y*texDim.x);
 }
 
@@ -341,14 +341,16 @@ vec4 gather_samples(in sample this_s, inout uint seed, out float p_hat){
 		sample_uv = get_sample_uv(seed);
 	    sample_index = int(uv2index(sample_uv));
 	    sample test_s = get_sample_pos_col(sample_index);
+	    if(background(test_s)) continue;
 
 		p_hat = luminance( get_radiance(this_s, test_s) );
+		//p_hat /= max(0.0, dot(this_s.nor, normalize(test_s.pos - this_s.pos)))/M_PI;
 
 	    reservoir = updateReservoir(reservoir, float(sample_index), p_hat, 1, seed);
 	}
 
 
-	float pdf = 1 / (mapSize.x*mapSize.y);
+	//float pdf = 1 / (mapSize.x*mapSize.y);
 	//sample the environment map
 	for (int k = 0; k < J; k++)
 	{
@@ -358,6 +360,7 @@ vec4 gather_samples(in sample this_s, inout uint seed, out float p_hat){
 	    sample test_s = get_sample_dir_col_for_env_jittered(sample_index, seed);
 
 		p_hat = luminance( get_radiance_for_env(this_s, test_s) );
+		//p_hat /= max(0.0, dot(this_s.nor, test_s.nor))/M_PI;
 	    reservoir = updateReservoir(reservoir, float(sample_index), p_hat, 1, seed);
 	}
 
@@ -410,7 +413,6 @@ void main(void) {
 	vec4 reservoir = gather_samples(this_s, seed, p_hat);
 
 
-
 	//TEMPORAL REUSE//____________________________________________________________
 
 	ivec2 reprojected_uv = ivec2(this_s.uv - this_s.vel*texDim );
@@ -436,7 +438,9 @@ void main(void) {
 				prev_reservoir.y = float(uv2index(prev_best_wpos_uv));
 				test_s = get_sample(int(prev_reservoir.y));
 
+
 				p_hat = luminance( get_radiance(this_s, test_s) );
+				if(background(test_s)) p_hat = 0.0;
 
 				//vec2 prev_vel = texture(velTex, vec2(reprojected_uv)).ba;
 				//float vel_diff = length(this_s.vel - prev_vel);
@@ -454,6 +458,7 @@ void main(void) {
 			test_s = get_sample_dir_col_for_env_jittered(int(prev_reservoir.y), seed);
 
 			p_hat = luminance( get_radiance_for_env(this_s, test_s) );
+			if(background(test_s)) p_hat = 0.0;
 
 			//vec2 prev_vel = texture(velTex, vec2(reprojected_uv)).ba;
 			//float vel_diff = length(this_s.vel - prev_vel);

@@ -85,16 +85,20 @@ void main()
 	vec3 viewPos = normalize(ray) * farDistance * depth;
 	vec3 viewNorm = norm_depth.xyz;
 
-	float a = 1./(1. + viewNorm.z);
-    float b = -viewNorm.x*viewNorm.y*a;
-    vec3 f = vec3(1. - viewNorm.x*viewNorm.x*a, b, -viewNorm.x);
-   	vec3 r = vec3(b, 1. - viewNorm.y*viewNorm.y*a , -viewNorm.y);
+//	float a = 1./(1. + viewNorm.z);
+//    float b = -viewNorm.x*viewNorm.y*a;
+//    vec3 f = vec3(1. - viewNorm.x*viewNorm.x*a, b, -viewNorm.x);
+//   	vec3 r = vec3(b, 1. - viewNorm.y*viewNorm.y*a , -viewNorm.y);
+//
+//   	mat3 TBN = mat3(r, f, viewNorm);
 
-   	mat3 TBN = mat3(r, f, viewNorm);
-   	vec3 bent_nor = viewNorm*0.02;
+  //vec3 right = normalize(cross(viewNorm, vec3(0,1,0)));
+  //vec3 front = normalize(cross(right, viewNorm));
+  //mat3 TBN = mat3(right, front, viewNorm);
+
 	
 	// accumulated occlusion factor
-	#define NUM_BASE_SAMPLES 3	
+	#define NUM_BASE_SAMPLES 16	
 	float occ = 0;
 	float weight = amnt / NUM_BASE_SAMPLES;
 	for (int i = 0; i < NUM_BASE_SAMPLES; ++i) {
@@ -103,9 +107,10 @@ void main()
 		vec2 tile_uv = 128*vec2(mod(tile_select, 8), floor(tile_select/8));
 		vec4 rand = texelFetch(tex_rand, ivec2(mod(texcoord_rect, vec2(128)) + tile_uv));
 		rand.xyz = rand.xyz*2 - 1;
-		if(rand.z < 0) rand.xyz *= -1;
-		rand.xyz = TBN * rand.xyz;
-		//rand.xyz = normalize(rand.xyz + viewNorm);
+		//rand.xyz = normalize(viewNorm*0.1 + rand.xyz);
+		//if(rand.z < 0) rand.xyz *= -1;
+		//rand.xyz = TBN * rand.xyz;
+		rand.xyz = normalize(rand.xyz + viewNorm);
 
 		float sample_radius = rand.w*rand.w * radius;
 		vec4 nuv = (projmat * vec4(viewPos.xyz + rand.xyz * sample_radius, 1));
@@ -120,7 +125,7 @@ void main()
 
 		float sample_depth = texture(tex_normals, nuv_rect).w;
 		if(sample_depth < depth){
-			occ += weight/(1 + sample_radius);
+			occ += weight;///(1 + sample_radius);
 			//bent_nor += rand.xyz;
 
 		} 
