@@ -4,7 +4,7 @@
 vec2 get_sample_uv(in sample this_s, inout uint seed){
 
   	float maxDistance = 200;//max(texDim.x, texDim.y);
-  	float resolution  = 0.2;
+  	float resolution  = 0.1;
   	int   steps       = 10;
   	float thickness   = 0.2;
 
@@ -131,35 +131,6 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
 
 
   return frag;
-/*
-
-	vec3 sample_pos = random_dir;
-	vec4 sample_proj = projmat * (vec4(sample_pos, 0));
-
-	sample_proj.xy /= sample_proj.w;
-	sample_proj.y *= -1;
-	sample_proj.xy = sample_proj.xy * 0.5 + 0.5;
-
-	//vec2 sample_uv = (textureMatrix0 * vec4(sample_proj.xy,1,1)).xy;// * texDim;
-	vec2 sample_uv = sample_proj.xy * texDim;
-	vec2 uv_dir = normalize(sample_uv - this_s.uv);
-	vec2 exit_dist;
-	exit_dist.x = uv_dir.x > 0 ? 	(texDim.x - this_s.uv.x) / uv_dir.x :
-									this_s.uv.x / uv_dir.x;
-
-	exit_dist.y = uv_dir.y > 0 ? 	(texDim.y - this_s.uv.y) / uv_dir.y :
-									this_s.uv.y / uv_dir.y;
-
-	exit_dist.x = uv_dir.x == 0 ? 99999999 : exit_dist.x;
-	exit_dist.y = uv_dir.y == 0 ? 99999999 : exit_dist.y;
-
-
-	float rand_dist = RandomFloat01(seed);
-	rand_dist *= rand_dist;
-	//rand_dist *= rand_dist;
-	return this_s.uv + uv_dir*rand_dist*min(exit_dist.x, exit_dist.y);
-*/
-	//return vec2(RandomFloat01(seed), RandomFloat01(seed))*texDim;
 
 }
 
@@ -169,10 +140,10 @@ vec2 cartesianToUv(vec3 cartesian) {
     return vec2(theta, phi);
 }
 
-vec2 get_sample_uv_for_env(inout uint seed, in vec3 nor){
+vec2 get_sample_uv_for_env(inout uint seed, in vec3 ref){
 
-	vec3 rand_dir = randomUnitVector3(seed);
-	rand_dir *= dot(rand_dir, nor) > 0.0 ? 1 : -1;
+	vec3 rand_dir = normalize(ref + randomUnitVector3(seed)*roughness);
+	//rand_dir *= dot(rand_dir, nor) > 0.0 ? 1 : -1;
 	vec2 uv = vec2(atan(rand_dir.z, rand_dir.x), asin(rand_dir.y));
     uv *= vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
     uv += 0.5;
@@ -389,7 +360,7 @@ vec3 get_radiance(in sample this_s, in sample test_s){
 vec3 get_radiance_for_env(in sample this_s, in sample test_s){
 
 	float lambert = max(0.0, dot(this_s.ref, test_s.nor));
-	lambert = pow(lambert, 10)/10;
+	lambert = pow(lambert, 100)/100;
 	return this_s.alb * lambert * test_s.col;							
 }
 
@@ -416,7 +387,7 @@ bool visible(in sample this_s, in sample test_s, inout uint seed){
 	float start = step * (1 + RandomFloat01(seed) - 0.5);
 	for(float i = start; i < 1; i += step){ //make a better tracing
 		vec2 test_uv = mix(this_s.uv, test_s.uv, vec2(i*i));
-		float expected_depth = mix(this_s.depth, test_s.depth, i*i);
+		float expected_depth = (this_s.depth * test_s.depth) / mix(test_s.depth, this_s.depth, i*i);
 		float sampled_depth = texelFetch(norDepthTex, ivec2(test_uv)).w;
 		if(sampled_depth < (expected_depth - 0.01) ) return false;
 	}
@@ -433,7 +404,7 @@ vec2 pos2uv(in vec3 p){
 
 bool visible_env(in sample this_s, in sample test_s, inout uint seed){
 
-	return true;
+	//return true;
 
 	float num_iterations = 6;
 	float step = 0.01;//1 / num_iterations;
@@ -444,7 +415,7 @@ bool visible_env(in sample this_s, in sample test_s, inout uint seed){
 	for(float i = start; i < 1; i += step){ //make a better tracing
 		vec2 test_uv = mix(this_s.uv, end_uv, vec2(i*i));
 		if(test_uv.x < 0 || test_uv.y < 0 || test_uv.x >= texDim.x || test_uv.y >= texDim.y) return true;
-		float expected_depth = mix(this_s.depth*farClip, end_depth, i*i);
+		float expected_depth = (this_s.depth*farClip * test_s.depth) / mix(test_s.depth*farClip, this_s.depth, i*i);
 		float sampled_depth = texture(norDepthTex, test_uv).w*farClip;
 		if( expected_depth - sampled_depth > 0.01 ) return false;
 	}

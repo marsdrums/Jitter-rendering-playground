@@ -90,7 +90,7 @@ void main(void) {
 	permuted_uv = ivec2(jit_in.uv + tile*width);
 
 	vec4 permuted_nor_depth = texelFetch(norDepthTex, permuted_uv);
-	bool same_shape = abs(this_nor_depth.w - permuted_nor_depth.w) < 0.04 && dot(this_nor_depth.xyz, permuted_nor_depth.xyz) > 0.99;
+	bool same_shape = abs(this_nor_depth.w - permuted_nor_depth.w) < 0.002 && dot(this_nor_depth.xyz, permuted_nor_depth.xyz) > 0.99;
 
 	if( same_shape ){
 		outColor0 = texelFetch(reservoirTex, permuted_uv);

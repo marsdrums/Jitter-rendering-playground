@@ -247,16 +247,14 @@ vec4 updateReservoir(vec4 reservoir, float lightToSample, float weight, float c,
 
 bool visible(in sample this_s, in sample test_s, inout uint seed){
 	return true;
-	float num_iterations = 5;
-	float step = 1 / num_iterations;
+	float num_iterations = 6;
+	float step = 0.1;//1 / num_iterations;
 	float start = step * (1 + RandomFloat01(seed) - 0.5);
 	for(float i = start; i < 1; i += step){ //make a better tracing
 		vec2 test_uv = mix(this_s.uv, test_s.uv, vec2(i*i));
-		float expected_depth = mix(this_s.depth, test_s.depth, i*i);
+		float expected_depth = (this_s.depth * test_s.depth) / mix(test_s.depth, this_s.depth, i*i);
 		float sampled_depth = texelFetch(norDepthTex, ivec2(test_uv)).w;
-		//sampled_depth = sampled_depth == 0 ? 1.0 : sampled_depth;
-		//if(sampled_depth < expected_depth-0.01 ) return false;
-		if(expected_depth - sampled_depth > 0.1 ) return false;
+		if(sampled_depth < (expected_depth - 0.01) ) return false;
 	}
 	return true;
 }

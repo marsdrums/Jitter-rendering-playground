@@ -100,7 +100,7 @@ vec4 gather_samples(in sample this_s, inout uint seed, out float p_hat){
 
     vec4 reservoir = vec4(0); //curr reservoir
 
-	int M = 8; //num of from the view port
+	int M = 2; //num of from the view port
 	int J = 0; //num of samples from the environment map
 
 	int sample_index;
@@ -139,7 +139,7 @@ vec4 gather_samples(in sample this_s, inout uint seed, out float p_hat){
 	//sample the environment map
 	for (int k = 0; k < J; k++)
 	{
-		sample_uv = get_sample_uv_for_env(seed, this_s.nor);
+		sample_uv = get_sample_uv_for_env(seed, this_s.ref);
 
 	    sample_index = int(uv2index_for_env(sample_uv));
 	    sample test_s = get_sample_dir_col_for_env_jittered(sample_index, seed);

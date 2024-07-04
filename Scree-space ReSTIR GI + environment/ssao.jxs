@@ -98,7 +98,7 @@ void main()
 
 	
 	// accumulated occlusion factor
-	#define NUM_BASE_SAMPLES 16	
+	#define NUM_BASE_SAMPLES 2	
 	float occ = 0;
 	float weight = amnt / NUM_BASE_SAMPLES;
 	for (int i = 0; i < NUM_BASE_SAMPLES; ++i) {
@@ -116,7 +116,7 @@ void main()
 		vec4 nuv = (projmat * vec4(viewPos.xyz + rand.xyz * sample_radius, 1));
 		nuv.xy /= nuv.w;
 		if(nuv.x <= -1 || nuv.y <= -1 || nuv.x >= 1 || nuv.y >= 1){
-			occ += weight;
+			//occ += 0;
 			//bent_nor += rand.xyz;
 			continue;
 		}
@@ -124,7 +124,7 @@ void main()
 		vec2 nuv_rect = vec2(textureMatrix0 * vec4((nuv.xy*0.5 +0.5), 1,1));
 
 		float sample_depth = texture(tex_normals, nuv_rect).w;
-		if(sample_depth < depth){
+		if(sample_depth+0.001 < depth){
 			occ += weight;///(1 + sample_radius);
 			//bent_nor += rand.xyz;
 
