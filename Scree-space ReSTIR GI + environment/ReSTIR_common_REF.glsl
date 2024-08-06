@@ -1,53 +1,94 @@
 #define metallic 0.0
-#define roughness 0.3
+#define roughness 0.1
+
+float get_exit_distance(vec2 pos, vec2 dir){
+
+	vec2 dist = vec2(9999999.0, 99999999.0);
+
+    //Calculate the distance to each of the four boundaries
+    if(dir.x > 0) dist.x = (texDim.x - pos.x) / dir.x;
+    if(dir.x < 0) dist.x = -pos.x / dir.x;
+
+    if(dir.y > 0) dist.y = (texDim.y - pos.y) / dir.y;
+    if(dir.y < 0) dist.y = -pos.y / dir.y;
+
+    //The minimum positive distance is the one at which the ray exits the screen
+    return min(dist.x, dist.y);
+}
+
+bool get_exit_distance_from_frustum(in vec3 ro, in vec3 rd, in vec4 plane, out float t){
+
+  // Calculate the denominator of the intersection formula
+  float denom = dot(plane.xyz, rd);
+
+  if (abs(denom) > 1e-6) {  // Avoid division by zero
+    // Calculate the intersection parameter t
+    t = -(dot(plane.xyz, ro) + plane.w) / denom;
+
+    if (t >= 0.0) {  // Check if the intersection is in the direction of the ray
+        return true;
+    } else {
+      return false;
+    }
+  } 
+
+  return false;  // Ray is parallel to the plane
+}
 
 vec2 get_sample_uv(in sample this_s, inout uint seed){
 
-  	float maxDistance = 200;//max(texDim.x, texDim.y);
-  	float resolution  = 0.1;
+  	float resolution  = 0.3;
   	int   steps       = 10;
-  	float thickness   = 0.2;
 
- 	vec4 startView = vec4(this_s.pos.xyz, 1);
+ 	vec4 startView = vec4(this_s.pos, 1);
 
- 	//bool valid = false;
- 	//vec3 pivot;
- 	//for(int k = 0; k < 20; k++){
-	//	pivot = normalize(this_s.ref + randomUnitVector3(seed)*roughness*roughness);
-	//	if( dot(pivot, this_s.nor) > 0 ){
-	//		valid = true;
-	//		break;
-	//	}
- 	//}
- //
- 	//if(!valid) return vec2(-1);
+ 	bool valid = false;
+ 	vec3 pivot;
+ 	for(int k = 0; k < 20; k++){
+			pivot = normalize(this_s.ref + randomUnitVector3(seed)*roughness*roughness);
+			if( dot(pivot, this_s.nor) > 0 ){
+				valid = true;
+				break;
+			}
+ 	}
+ 	
+ 	if(!valid) return vec2(-10000);
 
-	vec3 pivot = normalize(this_s.ref + randomUnitVector3(seed)*roughness*roughness);
+	if(pivot.z > 0.999){
+	  //convert ray direction from view to world space
+	  pivot = (invV * vec4(pivot, 0)).xyz;
+	  //to texture space
+	  vec2 frag = vec2(atan(pivot.z, pivot.x), asin(pivot.y));
+	  frag *= vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
+	  frag += 0.5;
+	  frag *= mapSize;
+	  return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
+	}
 
-  	vec4 endView   = vec4(startView.xyz + pivot * maxDistance, 1);
+	float t = 999999;
+	float test_t;
+	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_near, test_t) ? 		min(t, test_t) : t;
+	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_far, test_t) ? 		min(t, test_t) : t;
+	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_left, test_t) ? 		min(t, test_t) : t;
+	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_right, test_t) ? 	min(t, test_t) : t;
+	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_top, test_t) ? 		min(t, test_t) : t;
+	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_bottom, test_t) ? 	min(t, test_t) : t;
 
-  vec4 positionTo = startView;
+	vec4 depths;// = startView;
+	vec4 endView;
+	vec4 startFrag;
+	vec4 endFrag;
 
-  vec4 startFrag      = startView;
-       //startFrag      = projmat * startFrag;
-       //startFrag.xy   /= startFrag.w;
-       //startFrag.xy   = startFrag.xy * 0.5 + 0.5;
-       //startFrag.y = 1 - startFrag.y;
-       //startFrag.y   *= -1;
-       //startFrag.xy = (textureMatrix0 * vec4(startFrag.xy*0.5 + 0.5,1,1)).xy;
+  endView   = vec4(startView.xyz + pivot*t, 1);
 
-       //startFrag.xy  *= texDim;
-       startFrag.xy = this_s.uv;
-       //startFrag.xy = this_s.uv;
+  startFrag    = startView;
+  startFrag.xy = this_s.uv;
 
-  vec4 endFrag      = endView;
-       endFrag      = projmat * endFrag;
-       endFrag.xy 	/= endFrag.w;
-       //endFrag.y   *= -1;
-       //endFrag.xy = (textureMatrix0 * vec4(endFrag.xy*0.5 + 0.5,1,1)).xy;
-       endFrag.xy   = endFrag.xy * 0.5 + 0.5;
-       //endFrag.y = 1 - endFrag.y;
-       endFrag.xy  *= texDim;
+  endFrag      = endView;
+  endFrag      = projmat * endFrag;
+  endFrag.xy 	/= endFrag.w;
+  endFrag.xy   = endFrag.xy * 0.5 + 0.5;
+  endFrag.xy  *= texDim;
 
   vec2 frag  = startFrag.xy;
    //vec4   uv;
@@ -58,6 +99,7 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
   float useX      = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
   float delta     = mix(abs(deltaY), abs(deltaX), useX) * clamp(resolution, 0.0, 1.0);
   vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.001);
+  frag += increment * RandomFloat01(seed)*0.5;
 
   float search0 = 0;
   float search1 = 0;
@@ -66,44 +108,62 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
   int hit1 = 0;
 
   float viewDistance = startView.z;
-  float depth        = thickness;
 
   float i = 0;
 
+  bool found = false;
+
   for (i = 0; i < int(delta); i+=1) {
     frag      += increment;
-    if(frag.x < 0 || frag.y < 0 || frag.x >= texDim.x || frag.y >= texDim.y) return vec2(-1);
+    	if(i >= int(delta)-1){
+    		//if the ray didn't hit any geometry, sample from the envionment map
+	
+    		//convert ray direction from view to world space
+    		pivot = (invV * vec4(pivot, 0)).xyz;
+	
+    		//to texture space
+    		frag = vec2(atan(pivot.z, pivot.x), asin(pivot.y));
+    		frag *= vec2(-0.1591549431, 0.3183098862);//vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
+    		frag += 0.5;
+    		frag *= mapSize;
+    		return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
+    	}
     //uv.xy      = frag / texDim;
-    positionTo = texture(posTex, frag);
+    depths = texelFetch(velTex, ivec2(frag));
 
     search1 = mix( (frag.y - startFrag.y) / deltaY, (frag.x - startFrag.x) / deltaX, useX );
     search1 = clamp(search1, 0.0, 1.0);
 
     viewDistance = (startView.z * endView.z) / mix(endView.z, startView.z, search1);
-    depth        = positionTo.z - viewDistance;
+    //depth        = positionTo.r - viewDistance;
 
-    if (depth > 0 && depth < thickness) {
+    if ( 	(depths.r > viewDistance && viewDistance > depths.g ) || 
+    			(depths.b > viewDistance && viewDistance > depths.a ) ){
+    //if(depth > 0 && depth < thickness){
       hit0 = 1;
+      found = true;
       break;
     } else {
       search0 = search1;
     }
   }
 
-  search1 = search0 + ((search1 - search0) / 2.0);
+  search1 = search0 + ((search1 - search0) / 2.0);// + (RandomFloat01(seed) - 0.5)*0.5;
 
   steps *= hit0;
 
   for (i = 0; i < steps; ++i) {
     frag       = mix(startFrag.xy, endFrag.xy, search1);
-    if(frag.x < 0 || frag.y < 0 || frag.x >= texDim.x || frag.y >= texDim.y) return vec2(-1);
+
     //uv.xy      = frag / texDim;
-    positionTo = texture(posTex, frag);
+    depths = texelFetch(velTex, ivec2(frag));
 
     viewDistance = (startView.z * endView.z) / mix(endView.z, startView.z, search1);
-    depth        = positionTo.z - viewDistance;
+    //depth        = positionTo.r - viewDistance;
 
-    if (depth > 0 && depth < thickness) {
+    if ( 	(depths.r > viewDistance && viewDistance > depths.g) || 
+    			(depths.b > viewDistance && viewDistance > depths.a) ){
+    //if(depth > 0 && depth < thickness){
       hit1 = 1;
       search1 = search0 + ((search1 - search0) / 2.0);
     } else {
@@ -112,23 +172,6 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
       search0 = temp;
     }
   }
-
-
-/*
-  float visibility =
-      hit1
-    * positionTo.w
-    * ( 1 - max( dot(-unitPositionFrom, pivot), 0))
-    * ( 1 - clamp( depth / thickness, 0, 1))
-    * ( 1 - clamp( length(positionTo - positionFrom) / maxDistance, 0, 1))
-    * (uv.x < 0 || uv.x > 1 ? 0 : 1)
-    * (uv.y < 0 || uv.y > 1 ? 0 : 1);
-
-  visibility = clamp(visibility, 0, 1);
-
-  uv.ba = vec2(visibility);
-*/
-
 
   return frag;
 
@@ -196,9 +239,10 @@ vec3 uv2dir(in vec2 uv){
     float latitude = v * M_PI * 0.5;     // Latitude (-π/2 to π/2)
 
     // Convert spherical coordinates to Cartesian coordinates
-    float x = cos(latitude) * sin(longitude);
+    float cos_latitude = cos(latitude);
+    float x = cos_latitude * sin(longitude);
     float y = sin(latitude);
-    float z = cos(latitude) * cos(longitude);
+    float z = cos_latitude * cos(longitude);
 
     vec3 dir = vec3(x, y, z);
     return (V * vec4(dir, 0)).xyz;
@@ -260,7 +304,7 @@ sample get_sample(int index){
 	s.uv = uv;
 	s.alb = lookup4.rgb;
 	s.id = lookup4.w;
-	s.view = normalize(-s.pos);
+	s.view = normalize(s.pos);
 	s.ref = reflect(s.view, s.nor);
 	return s;
 }
@@ -268,6 +312,11 @@ sample get_sample(int index){
 
 //PBR functions
 float saturate(in float x){ return clamp(x, 0.0, 1.0); }
+
+vec3 simpleFresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (vec3(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
 
 vec3 	fresnelSchlickRoughness(float HdotV, vec3 F0, float rou){
 	float 	x = saturate(1. - HdotV); //x^5
@@ -302,19 +351,19 @@ vec3 get_specular_radiance(in sample this_s, in sample test_s){
 
 	const vec3 F0 = vec3(0.01);
 
-	vec3 diff = test_s.pos - this_s.pos;
-	//if(dot(diff, this_s.nor) < 0) return vec3(0.0);
-    vec3 L = normalize(diff);
-	vec3 H = normalize(this_s.view + L);		//half vector
+	vec3 V = normalize(-this_s.pos);
+  vec3 L = normalize(test_s.pos - this_s.pos);
+	vec3 H = normalize(V + L);		//half vector
 
 	//compute dot products
-	float	HdotV = max(0.0, (dot(H, this_s.view)));
-    float 	NdotV = max(0.001, (dot(this_s.nor, this_s.view))); //avoid dividing by 0
+	float	HdotV = max(0.0, (dot(H, V)));
+    float 	NdotV = max(0.001, (dot(this_s.nor, V))); //avoid dividing by 0
     float 	NdotL = max(0.001, (dot(this_s.nor, L)));
     float   NdotH = max(0.0, (dot(this_s.nor, H)));
     float   HdotL = max(0.001, (dot(H, L)));
 
-	vec3 	F  	= fresnelSchlickRoughness(HdotV, F0, roughness); //compute fresnel
+	//vec3 	F  	= fresnelSchlickRoughness(HdotV, F0, roughness); //compute fresnel
+	vec3 F = simpleFresnelSchlick(NdotV, F0);
 	//return test_s.col;// * F;
 	float	NDF = DistributionGGX(NdotH, roughness); //compute NDF term
 	float 	G   = GeometrySmith(NdotV, NdotL, roughness); //compute G term   
@@ -327,7 +376,9 @@ vec3 get_specular_radiance(in sample this_s, in sample test_s){
 	//const float inv_pi = 0.3183098862;
 	//return 	(kD * this_s.alb * inv_pi + spe) * test_s.col * NdotL;
     //float pdfH = NDF * NdotH / (4.0 * HdotL) + 0.001;
-	return spe * test_s.col * NdotL;// / pdfH;
+	return F * test_s.col;// / pdfH;
+	//return test_s.col;
+	//return spe * test_s.col;// * NdotL;
 }
 
 float get_pdf(in sample this_s, in sample test_s){
@@ -359,9 +410,38 @@ vec3 get_radiance(in sample this_s, in sample test_s){
 
 vec3 get_radiance_for_env(in sample this_s, in sample test_s){
 
-	float lambert = max(0.0, dot(this_s.ref, test_s.nor));
-	lambert = pow(lambert, 100)/100;
-	return this_s.alb * lambert * test_s.col;							
+	const vec3 F0 = vec3(0.01);
+
+	vec3 V = normalize(-this_s.pos);
+  vec3 L = normalize(test_s.nor);
+	vec3 H = normalize(V + L);		//half vector
+
+	//compute dot products
+	float	HdotV = max(0.0, (dot(H, V)));
+  float 	NdotV = max(0.001, (dot(this_s.nor, V))); //avoid dividing by 0
+  float 	NdotL = max(0.001, (dot(this_s.nor, L)));
+  float   NdotH = max(0.0, (dot(this_s.nor, H)));
+  float   HdotL = max(0.001, (dot(H, L)));
+
+	//vec3 	F  	= fresnelSchlickRoughness(HdotV, F0, roughness); //compute fresnel
+	vec3 F = simpleFresnelSchlick(NdotV, F0);
+	//return test_s.col;// * F;
+	float	NDF = DistributionGGX(NdotH, roughness); //compute NDF term
+	float 	G   = GeometrySmith(NdotV, NdotL, roughness); //compute G term   
+	vec3 	spe = (NDF*G*F)/(4.*NdotV*NdotL);  
+
+	//vec3 	kS = F;					//k specular
+	//vec3 	kD = vec3(1.0) - kS;	//k diffuse
+	//		kD *= 1.0 - metallic;		//nullify k diffuse if metallic
+
+	//const float inv_pi = 0.3183098862;
+	//return 	(kD * this_s.alb * inv_pi + spe) * test_s.col * NdotL;
+    //float pdfH = NDF * NdotH / (4.0 * HdotL) + 0.001;
+	return F * test_s.col;// / pdfH;
+	//return test_s.col * NdotL * F;			
+	//return spe*1000;		
+	//return 	spe * test_s.col * NdotL;
+	//return test_s.col;
 }
 
 vec4 updateReservoir(vec4 reservoir, float lightToSample, float weight, float c, inout uint seed)
@@ -384,12 +464,15 @@ bool visible(in sample this_s, in sample test_s, inout uint seed){
 	//return true;
 	float num_iterations = 6;
 	float step = 0.1;//1 / num_iterations;
-	float start = step * (1 + RandomFloat01(seed) - 0.5);
+	float start = 0.0;//step * (1 + RandomFloat01(seed) - 0.5);
 	for(float i = start; i < 1; i += step){ //make a better tracing
 		vec2 test_uv = mix(this_s.uv, test_s.uv, vec2(i*i));
-		float expected_depth = (this_s.depth * test_s.depth) / mix(test_s.depth, this_s.depth, i*i);
-		float sampled_depth = texelFetch(norDepthTex, ivec2(test_uv)).w;
-		if(sampled_depth < (expected_depth - 0.01) ) return false;
+		float expected_depth = (this_s.pos.z * test_s.pos.z) / mix(test_s.pos.z, this_s.pos.z, i*i);
+		vec4 sampled_depth = texelFetch(velTex, ivec2(test_uv));
+    if ( 	(sampled_depth.r > expected_depth && expected_depth > sampled_depth.g) || 
+    			(sampled_depth.b > expected_depth && expected_depth > sampled_depth.a) ){
+    	return false;
+    }
 	}
 	return true;
 }
@@ -406,10 +489,10 @@ bool visible_env(in sample this_s, in sample test_s, inout uint seed){
 
 	//return true;
 
-	float num_iterations = 6;
+	float num_iterations = 25;
 	float step = 0.01;//1 / num_iterations;
-	float start = step * (RandomFloat01(seed) + 0.5);
-	vec3 end_pos = this_s.pos + test_s.nor*6; 
+	float start = 0.0;//step * (RandomFloat01(seed) + 0.5);
+	vec3 end_pos = this_s.pos + test_s.nor*10; 
 	float end_depth = length(end_pos);
 	vec2 end_uv = pos2uv(end_pos);
 	for(float i = start; i < 1; i += step){ //make a better tracing

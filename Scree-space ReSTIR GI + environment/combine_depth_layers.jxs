@@ -1,0 +1,58 @@
+<jittershader name="default">
+	<description>Default Slab </description>
+	<param name="tex0" type="int" default="0" />
+	<param name="tex1" type="int" default="1" />
+	<param name="tex2" type="int" default="2" />
+	<param name="tex3" type="int" default="3" />
+	<param name="modelViewProjectionMatrix" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="position" type="vec3" state="POSITION" />
+	<param name="texcoord" type="vec2" state="TEXCOORD" />
+	<language name="glsl" version="1.5">
+		<bind param="tex0" program="fp" />
+		<bind param="tex1" program="fp" />
+		<bind param="tex2" program="fp" />
+		<bind param="tex3" program="fp" />
+		<bind param="modelViewProjectionMatrix" program="vp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="position" program="vp" />
+		<bind param="texcoord" program="vp" />
+		<program name="vp" type="vertex"  >
+		<![CDATA[
+			#version 330 core
+			
+			in vec3 position;
+			in vec2 texcoord;
+			out jit_PerVertex {
+				vec2 texcoord;
+			} jit_out;
+			uniform mat4 modelViewProjectionMatrix;
+			uniform mat4 textureMatrix0;
+			
+			void main(void) {
+				gl_Position = modelViewProjectionMatrix*vec4(position, 1.);
+				jit_out.texcoord = vec2(textureMatrix0*vec4(texcoord, 0., 1.));
+			}
+		]]>
+		</program>
+		
+		<program name="fp" type="fragment"  >
+		<![CDATA[
+			#version 330 core
+			
+			in jit_PerVertex {
+				vec2 texcoord;
+			} jit_in;
+			layout (location = 0) out vec4 outColor;
+			
+			uniform sampler2DRect tex0, tex1, tex2, tex3;
+			void main(void) {
+				outColor.r = texture(tex3, jit_in.texcoord).r;
+				outColor.g = texture(tex2, jit_in.texcoord).r;
+				outColor.b = texture(tex1, jit_in.texcoord).r;
+				outColor.a = texture(tex0, jit_in.texcoord).r;
+			}
+		]]>
+		</program>
+	</language>
+</jittershader>

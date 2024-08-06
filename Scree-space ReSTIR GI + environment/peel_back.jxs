@@ -1,0 +1,55 @@
+<jittershader name="fill-flat-quads">
+	<description>Default Shader </description>
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />	
+	<param name="MV" type="mat4" state="MODELVIEW_MATRIX" />
+	<param name="farClip" type="float" state="FAR_CLIP" />
+	<param name="prevDepthTex" type="int" default="1" />
+	<param name="texDim" type="vec2" state="TEXDIM1" />
+	<language name="glsl" version="1.5">
+		<bind param="pos" program="vp" />
+		<bind param="MVP" program="vp" />
+		<bind param="MV" program="vp" />
+		<bind param="farClip" program="fp" />
+		<bind param="prevDepthTex" program="fp" />
+		<bind param="texDim" program="fp" />
+		<program name="vp" type="vertex">
+<![CDATA[
+#version 330 core
+uniform mat4 MVP, MV;
+in vec3 pos;
+
+out jit_PerVertex {
+	smooth vec3 vPos;	
+} jit_out;
+
+void main() {	
+	gl_Position = MVP * vec4(pos, 1.);	
+	jit_out.vPos = (MV * vec4(pos, 1)).xyz;
+}
+]]>
+		</program>
+		<program name="fp" type="fragment">
+<![CDATA[
+#version 330 core
+
+uniform sampler2DRect prevDepthTex;
+uniform vec2 texDim;
+uniform float farClip;
+
+in jit_PerVertex {
+	smooth vec3 vPos;
+} jit_in;
+
+out vec4 color;
+
+void main() {
+
+	float depth = jit_in.vPos.z;//length(jit_in.vPos) / farClip;
+	if(depth <= texture(prevDepthTex, vec2(gl_FragCoord.x, texDim.y - gl_FragCoord.y)).r) discard;
+	color = vec4(depth,depth,depth,0);
+}	
+]]>
+		</program>
+	</language>
+</jittershader>

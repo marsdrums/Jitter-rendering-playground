@@ -72,6 +72,12 @@ in vec2 uv;
 out jit_PerVertex {
 	smooth vec2 uv;
 	smooth vec3 dir;
+	flat vec4 plane_near;
+	flat vec4 plane_far;
+	flat vec4 plane_left;
+	flat vec4 plane_right;
+	flat vec4 plane_top;
+	flat vec4 plane_bottom;
 } jit_out;
 
 uniform mat4 MVP;
@@ -134,7 +140,7 @@ void main(void) {
 
 			float rand_radius = sqrt(RandomFloat01(seed))/this_s.depth;
    			float rand_angle = RandomFloat01(seed)*TWOPI;
-   			vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*radius*0.03;
+   			vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*radius*0.03*this_s.depth;
    			//disk = TBN * disk;
    			//disk += this_s.pos;
    			//vec4 proj_disk = projmat * vec4(disk, 1);

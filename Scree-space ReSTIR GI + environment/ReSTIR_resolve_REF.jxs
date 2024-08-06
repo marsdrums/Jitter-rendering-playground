@@ -68,6 +68,12 @@ in vec2 uv;
 out jit_PerVertex {
 	smooth vec2 uv;
 	smooth vec3 dir;
+	flat vec4 plane_near;
+	flat vec4 plane_far;
+	flat vec4 plane_left;
+	flat vec4 plane_right;
+	flat vec4 plane_top;
+	flat vec4 plane_bottom;
 } jit_out;
 
 uniform mat4 MVP;
@@ -124,8 +130,8 @@ void main(void) {
 
 	outColor = vec4(0,0,0,1);
 
-	float radius = mix(2, 2, this_s.depth);
-	int NUM_SAMPLES = int(mix(6, 6, min(1.0, reservoir.z*0.001)));
+	float radius = mix(300, 300, this_s.depth)*roughness*roughness;
+	int NUM_SAMPLES = int(mix(4, 4, this_s.depth));
 	float weight = 1;
 	ivec2 uv_offset[8] = ivec2[](	ivec2(-1,-1), 
 									ivec2(0, -1), 
@@ -143,15 +149,15 @@ void main(void) {
 
 			float rand_radius = sqrt(RandomFloat01(seed));
    			float rand_angle = RandomFloat01(seed)*TWOPI;
-   			vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*0.001*radius/this_s.depth;
-   			disk = TBN * disk;
-   			disk += this_s.pos;
-   			vec4 proj_disk = projmat * vec4(disk, 1);
-   			proj_disk.xy /= proj_disk.w;
-   			vec2 proj_disk_uv = vec2(textureMatrix0 * vec4((proj_disk.xy*0.5 +0.5), 1,1));
-			randUV = ivec2(proj_disk_uv);//get_random_uv(seed, radius);
+   			vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*radius;///(-this_s.pos.z);
+   			//disk = TBN * disk;
+   			//disk += this_s.pos;
+   			//vec4 proj_disk = projmat * vec4(disk, 1);
+   			//proj_disk.xy /= proj_disk.w;
+   			//vec2 proj_disk_uv = vec2(textureMatrix0 * vec4((proj_disk.xy*0.5 +0.5), 1,1));
+			//randUV = ivec2(proj_disk_uv);//get_random_uv(seed, radius);
 			//randUV = get_random_uv(seed, radius);
-			randUV = ivec2(jit_in.uv + vec2(RandomFloat01(seed) - 0.5, RandomFloat01(seed) - 0.5)*rand_radius*radius/this_s.depth);
+			randUV = ivec2(jit_in.uv + disk.xy);
 
 			bool background = texelFetch(norDepthTex, randUV).w == 1;
 			if(randUV.x >= 0 && randUV.y >= 0 && randUV.x < texDim.x && randUV.y < texDim.y && !background){
@@ -172,7 +178,7 @@ void main(void) {
 			test_s = get_sample_pos_col(int(reservoir.y));
 
 			if(visible(this_s, test_s, seed)){
-				float this_weight = 1;//angle_diff * ( 1 - saturate(200*abs(this_s.depth - sample_depth)) );
+				float this_weight = angle_diff * ( 1 - saturate(200*abs(this_s.depth - sample_depth)) );
 				vec3 radiance = get_specular_radiance(this_s, test_s) * this_weight;// * max(0.5, dot(test_s.nor, this_s.nor));
 				float p_hat = luminance(radiance);
 				p_hat /= get_pdf(this_s, test_s);

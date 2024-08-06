@@ -9,6 +9,7 @@
 	<param name="pos" type="vec3" state="POSITION" />
 	<param name="uv" type="vec2" state="TEXCOORD" />
 	<param name="invV" type="mat4" state="VIEW_MATRIX" transform="INVERSE" />
+	<param name="variance_clipping_gamma" type="float" default="1" />
 	<language name="glsl" version="1.5">
 		<bind param="imgTex" program="fp" />
 		<bind param="velTex" program="fp" />
@@ -19,6 +20,7 @@
 		<bind param="pos" program="vp" />
 		<bind param="uv" program="vp" />
 		<bind param="invV" program="fp" />
+		<bind param="variance_clipping_gamma" program="fp" />
 		<program name="vp" type="vertex"  >
 <![CDATA[
 #version 330 core
@@ -46,6 +48,7 @@ void main(void) {
 uniform sampler2DRect imgTex, velTex, accumTex;
 uniform mat4 invV;
 uniform vec2 texDim;
+uniform float variance_clipping_gamma;
 
 in jit_PerVertex {
 	smooth vec2 uv;
@@ -107,7 +110,6 @@ void main(void) {
     // 0.0947, 0.1550, 0.0947
 
 	//COLOR CLIPPING
-	const float VARIANCE_CLIPPING_GAMMA = 0.9;
 	
 	vec3 NearColor0 = texelFetch(imgTex, ivec2(jit_in.uv) + ivec2(1, 0)).rgb;
 	vec3 NearColor1 = texelFetch(imgTex, ivec2(jit_in.uv) + ivec2(0, 1)).rgb;
@@ -122,8 +124,8 @@ void main(void) {
 	vec3 MU = M1 / 5.0;
 	vec3 Sigma = sqrt(M2 / 5.0 - MU * MU);
 	
-	vec3 BoxMin = MU - VARIANCE_CLIPPING_GAMMA * Sigma;
-	vec3 BoxMax = MU + VARIANCE_CLIPPING_GAMMA * Sigma;
+	vec3 BoxMin = MU - variance_clipping_gamma * Sigma;
+	vec3 BoxMax = MU + variance_clipping_gamma * Sigma;
 
 	p.col = clamp(p.col, BoxMin, BoxMax); 
 

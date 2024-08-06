@@ -134,7 +134,8 @@ int uv2index(in vec2 uv){
 }
 
 int uv2index_for_env(in vec2 uv){
-	uv -= 0.5;
+	//uv -= 0.5;
+	uv = floor(uv);
 	return -int(uv.x + uv.y*mapSize.x); //negate the index to distinguish it from viewport samples
 }
 
@@ -322,7 +323,7 @@ void main(void) {
 
 		for(int i = 0; i < num_samples; i++){
 
-			float rand_radius = sqrt(RandomFloat01(seed));///this_s.depth;
+			float rand_radius = sqrt(RandomFloat01(seed));//*(1 - this_s.depth);
    			float rand_angle = RandomFloat01(seed)*TWOPI;
    			vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*radius*0.03;
    			disk = TBN * disk;

@@ -1,7 +1,8 @@
 <jittershader name="mrt.simple.render.jxs">
 	<param name="tex_normals" type="int" default="0" />
-	<param name="tex_rand" type="int" default="1" />
-	<texture file="stbn_unit3_scalar_tiled.png" type="float16" unit="1" rectangle="1" filter="none none" wrap="repeat repeat"/>	
+	<param name="depthLayersTex" type="int" default="1" />
+	<param name="tex_rand" type="int" default="2" />
+	<texture file="stbn_unit3_scalar_tiled.png" type="float16" unit="2" rectangle="1" filter="none none" wrap="repeat repeat"/>	
 	<param name="projmat" type="mat4" state="CAM_PROJECTION_MATRIX" />
 	<param name="farDistance" type="float" state="FAR_CLIP" />
 	<param name="farCorner" type="vec3" state="FAR_CORNER" />	
@@ -19,7 +20,8 @@
 		<bind param="textureMatrix0" program="fp" />
 		<bind param="position" program="vp" />
 		<bind param="farCorner" program="vp" />			
-		<bind param="tex_normals" program="fp" />		
+		<bind param="tex_normals" program="fp" />	
+		<bind param="depthLayersTex" program="fp" />	
 		<bind param="tex_rand" program="fp" />		
 		<bind param="projmat" program="fp" />		
 		<bind param="farDistance" program="fp" />
@@ -62,7 +64,7 @@ in vec3 ray;
 
 layout (location = 0) out vec4 outColor;
 
-uniform sampler2DRect tex_normals, tex_rand;
+uniform sampler2DRect tex_normals, depthLayersTex, tex_rand;
 uniform mat4 projmat;
 uniform float farDistance;
 uniform float intensity;
@@ -84,7 +86,7 @@ void main()
 	float depth = norm_depth.w;
 	vec3 viewPos = normalize(ray) * farDistance * depth;
 	vec3 viewNorm = norm_depth.xyz;
-
+	//outTest = -vec4(viewPos.z, viewPos.z, viewPos.z, 1);
 //	float a = 1./(1. + viewNorm.z);
 //    float b = -viewNorm.x*viewNorm.y*a;
 //    vec3 f = vec3(1. - viewNorm.x*viewNorm.x*a, b, -viewNorm.x);
@@ -98,7 +100,7 @@ void main()
 
 	
 	// accumulated occlusion factor
-	#define NUM_BASE_SAMPLES 2	
+	#define NUM_BASE_SAMPLES 8	
 	float occ = 0;
 	float weight = amnt / NUM_BASE_SAMPLES;
 	for (int i = 0; i < NUM_BASE_SAMPLES; ++i) {
@@ -112,8 +114,9 @@ void main()
 		//rand.xyz = TBN * rand.xyz;
 		rand.xyz = normalize(rand.xyz + viewNorm);
 
-		float sample_radius = rand.w*rand.w * radius;
-		vec4 nuv = (projmat * vec4(viewPos.xyz + rand.xyz * sample_radius, 1));
+		float sample_radius = rand.w * radius;
+		vec3 randPos = viewPos.xyz + rand.xyz * sample_radius;
+		vec4 nuv = (projmat * vec4(randPos, 1));
 		nuv.xy /= nuv.w;
 		if(nuv.x <= -1 || nuv.y <= -1 || nuv.x >= 1 || nuv.y >= 1){
 			//occ += 0;
@@ -123,14 +126,15 @@ void main()
 
 		vec2 nuv_rect = vec2(textureMatrix0 * vec4((nuv.xy*0.5 +0.5), 1,1));
 
-		float sample_depth = texture(tex_normals, nuv_rect).w;
-		if(sample_depth+0.001 < depth){
-			occ += weight;///(1 + sample_radius);
-			//bent_nor += rand.xyz;
-
+		vec4 sample_depth = texture(depthLayersTex, nuv_rect);
+		//if(sample_depth+0.001 < depth){
+    if ( 	(sample_depth.r > randPos.z && randPos.z > sample_depth.g) || 
+    			(sample_depth.b > randPos.z && randPos.z > sample_depth.a) ){
+				occ += weight;///(1 + sample_radius);
+				//bent_nor += rand.xyz;
 		} 
-		
 	}
+
 	occ = 1 - clamp(occ, 0.0, 1.0);
 	//bent_nor = normalize(bent_nor);
 	
