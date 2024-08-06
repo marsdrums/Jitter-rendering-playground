@@ -537,7 +537,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1264.0, 2352.0, 206.0, 22.0 ],
+					"patching_rect" : [ 1088.0, 2399.0, 206.0, 22.0 ],
 					"text" : "jit.gl.slab @file through.jxs @inputs 1",
 					"textfile" : 					{
 						"filename" : "through.jxs",
@@ -557,7 +557,7 @@
 					"numinlets" : 3,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1056.0, 2392.0, 403.0, 22.0 ],
+					"patching_rect" : [ 880.0, 2439.0, 403.0, 22.0 ],
 					"text" : "jit.gl.slab @file temporalFilter.jxs @inputs 3 @variance_clipping_gamma 1",
 					"textfile" : 					{
 						"filename" : "temporalFilter.jxs",
@@ -6909,7 +6909,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 2095.0, -247.0, 108.0, 22.0 ],
-					"text" : "direction $1 -10 30"
+					"text" : "direction $1 -10 10"
 				}
 
 			}
@@ -11158,15 +11158,6 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-278", 0 ],
-					"order" : 0,
-					"source" : [ "obj-152", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-85", 2 ],
-					"order" : 1,
 					"source" : [ "obj-152", 0 ]
 				}
 
@@ -12853,6 +12844,13 @@
 				"patchline" : 				{
 					"destination" : [ "obj-95", 0 ],
 					"source" : [ "obj-96", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-85", 2 ],
+					"source" : [ "obj-97", 0 ]
 				}
 
 			}
