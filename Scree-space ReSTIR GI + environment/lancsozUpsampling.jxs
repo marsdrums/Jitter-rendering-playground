@@ -1,0 +1,90 @@
+<jittershader name="default">
+	<description>Default Slab </description>
+	<param name="tex0" type="int" default="0" />
+	<param name="modelViewProjectionMatrix" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="position" type="vec3" state="POSITION" />
+	<param name="texcoord" type="vec2" state="TEXCOORD" />
+	<param name="texDim" type="vec2" state="TEXDIM0" />
+	<language name="glsl" version="1.5">
+		<bind param="tex0" program="fp" />
+		<bind param="modelViewProjectionMatrix" program="vp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="position" program="vp" />
+		<bind param="texcoord" program="vp" />
+		<bind param="texDim" program="fp" />
+		<program name="vp" type="vertex"  >
+<![CDATA[
+#version 330 core
+
+in vec3 position;
+in vec2 texcoord;
+out jit_PerVertex {
+	vec2 texcoord;
+} jit_out;
+uniform mat4 modelViewProjectionMatrix;
+uniform mat4 textureMatrix0;
+
+void main(void) {
+	gl_Position = modelViewProjectionMatrix*vec4(position, 1.);
+	jit_out.texcoord = vec2(textureMatrix0*vec4(texcoord, 0., 1.));
+}
+]]>
+</program>
+
+<program name="fp" type="fragment"  >
+<![CDATA[
+#version 330 core
+#define PI    3.1415926535897932384626433
+#define PI_SQ 9.8696044010893586188344910
+
+#define LANCZOS_SIZE 2 // Lanczos Kernel Size
+
+in jit_PerVertex {
+	vec2 texcoord;
+} jit_in;
+layout (location = 0) out vec4 outColor;
+
+uniform sampler2DRect tex0;
+uniform vec2 texDim;
+
+float calcWeight(float x, float r) {
+    if (x == 0.0) return 1.;
+    return (r * sin(PI * x) * sin(PI * (x / r) )) / (PI_SQ * x*x);
+}
+float lanczosWeight(vec2 x, float r) {
+    return calcWeight(x.x, r) * calcWeight(x.y, r);
+}
+
+vec3 lanczos() {
+
+    vec2 ccoord = floor(jit_in.texcoord);
+
+    vec3  total  = vec3(0);
+
+    for (int x = -LANCZOS_SIZE; x <= LANCZOS_SIZE; x++) {
+        for (int y = -LANCZOS_SIZE; y <= LANCZOS_SIZE; y++) {
+
+            vec2  offs = vec2(x,y);
+            vec2  sco  = offs + ccoord;
+            vec2  d    = clamp((sco - jit_in.texcoord+0.5), vec2(-LANCZOS_SIZE), vec2(LANCZOS_SIZE));
+            vec3  val  = texelFetch(tex0, ivec2(sco)).rgb;
+            
+            float weight = lanczosWeight(d, float(LANCZOS_SIZE));
+            
+            total += val * weight;
+        }
+    }
+    return total;
+}
+
+void main(void) {
+
+	outColor.rgb = lanczos();
+	outColor.a = 1;
+
+}
+]]>
+</program>
+</language>
+</jittershader>
