@@ -40,233 +40,6 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
-					"filename" : "lancsozUpsampling.jxs",
-					"id" : "obj-309",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1789.0, 2362.0, 359.0, 22.0 ],
-					"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1 @dimscale 2. 2.",
-					"textfile" : 					{
-						"filename" : "lancsozUpsampling.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontface" : 0,
-					"fontname" : "Arial",
-					"fontsize" : 12.0,
-					"id" : "obj-308",
-					"maxclass" : "jit.fpsgui",
-					"mode" : 3,
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 1616.0, 2567.0, 80.0, 35.0 ]
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"filename" : "lancsozUpsampling.jxs",
-					"id" : "obj-307",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1789.0, 2404.0, 359.0, 22.0 ],
-					"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1 @dimscale 2. 2.",
-					"textfile" : 					{
-						"filename" : "lancsozUpsampling.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"filename" : "lancsozUpsampling.jxs",
-					"id" : "obj-306",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1789.0, 2322.0, 359.0, 22.0 ],
-					"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1 @dimscale 2. 2.",
-					"textfile" : 					{
-						"filename" : "lancsozUpsampling.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"filename" : "lancsozUpsampling.jxs",
-					"id" : "obj-305",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1789.0, 2288.0, 359.0, 22.0 ],
-					"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1 @dimscale 2. 2.",
-					"textfile" : 					{
-						"filename" : "lancsozUpsampling.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"filename" : "lancsozUpsampling.jxs",
-					"id" : "obj-304",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1789.0, 2254.0, 359.0, 22.0 ],
-					"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1 @dimscale 2. 2.",
-					"textfile" : 					{
-						"filename" : "lancsozUpsampling.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"filename" : "lancsozUpsampling.jxs",
-					"id" : "obj-303",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1789.0, 2217.0, 359.0, 22.0 ],
-					"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1 @dimscale 2. 2.",
-					"textfile" : 					{
-						"filename" : "lancsozUpsampling.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-302",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 2199.0, 2237.0, 151.0, 22.0 ],
-					"text" : "jit.gl.texture @filter nearest"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-301",
-					"maxclass" : "jit.pwindow",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 2193.0, 2287.0, 384.0, 267.0 ],
-					"sync" : 1
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-300",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1789.0, 2511.0, 151.0, 22.0 ],
-					"text" : "jit.gl.texture @filter nearest"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-299",
-					"maxclass" : "jit.pwindow",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 1785.0, 2659.0, 384.0, 267.0 ],
-					"sync" : 1
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-298",
-					"maxclass" : "button",
-					"numinlets" : 1,
-					"numoutlets" : 1,
-					"outlettype" : [ "bang" ],
-					"parameter_enable" : 0,
-					"patching_rect" : [ 1818.0, 1964.0, 24.0, 24.0 ]
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-296",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 1789.0, 2029.0, 132.0, 22.0 ],
-					"text" : "jit.noise 4 float32 10 10"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"filename" : "lancsozUpsampling.jxs",
-					"id" : "obj-295",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1789.0, 2179.0, 359.0, 22.0 ],
-					"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1 @dimscale 2. 2.",
-					"textfile" : 					{
-						"filename" : "lancsozUpsampling.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
-				}
-
-			}
-, 			{
-				"box" : 				{
 					"id" : "obj-294",
 					"maxclass" : "newobj",
 					"numinlets" : 1,
@@ -283,7 +56,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 59.0, 119.0, 1210.0, 795.0 ],
+						"rect" : [ 59.0, 118.0, 1210.0, 795.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -312,6 +85,331 @@
 						"subpatcher_template" : "",
 						"assistshowspatchername" : 0,
 						"boxes" : [ 							{
+								"box" : 								{
+									"id" : "obj-156",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_gl_texture", "" ],
+									"patching_rect" : [ 398.0, 1011.0, 151.0, 22.0 ],
+									"text" : "jit.gl.texture @filter nearest"
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"id" : "obj-155",
+									"maxclass" : "jit.pwindow",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_matrix", "" ],
+									"patching_rect" : [ 398.0, 1076.0, 257.0, 163.0 ],
+									"sync" : 1
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"id" : "obj-154",
+									"maxclass" : "jit.pwindow",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_matrix", "" ],
+									"patching_rect" : [ 713.0, 248.0, 240.0, 155.0 ],
+									"sync" : 1
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"id" : "obj-153",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 1,
+									"outlettype" : [ "jit_gl_texture" ],
+									"patcher" : 									{
+										"fileversion" : 1,
+										"appversion" : 										{
+											"major" : 9,
+											"minor" : 0,
+											"revision" : 0,
+											"architecture" : "x64",
+											"modernui" : 1
+										}
+,
+										"classnamespace" : "box",
+										"rect" : [ 0.0, 0.0, 1209.599999999999909, 795.200000000000045 ],
+										"bglocked" : 0,
+										"openinpresentation" : 0,
+										"default_fontsize" : 12.0,
+										"default_fontface" : 0,
+										"default_fontname" : "Arial",
+										"gridonopen" : 1,
+										"gridsize" : [ 15.0, 15.0 ],
+										"gridsnaponopen" : 1,
+										"objectsnaponopen" : 1,
+										"statusbarvisible" : 2,
+										"toolbarvisible" : 1,
+										"lefttoolbarpinned" : 0,
+										"toptoolbarpinned" : 0,
+										"righttoolbarpinned" : 0,
+										"bottomtoolbarpinned" : 0,
+										"toolbars_unpinned_last_save" : 0,
+										"tallnewobj" : 0,
+										"boxanimatetime" : 200,
+										"enablehscroll" : 1,
+										"enablevscroll" : 1,
+										"devicewidth" : 0.0,
+										"description" : "",
+										"digest" : "",
+										"tags" : "",
+										"style" : "",
+										"subpatcher_template" : "",
+										"assistshowspatchername" : 0,
+										"boxes" : [ 											{
+												"box" : 												{
+													"filename" : "vblur.jxs",
+													"id" : "obj-128",
+													"maxclass" : "newobj",
+													"numinlets" : 1,
+													"numoutlets" : 2,
+													"outlettype" : [ "jit_gl_texture", "" ],
+													"patching_rect" : [ 50.0, 133.0, 293.0, 22.0 ],
+													"text" : "jit.gl.slab @file vblur.jxs @inputs 1 @dimscale 0.5 0.5",
+													"textfile" : 													{
+														"filename" : "vblur.jxs",
+														"flags" : 0,
+														"embed" : 0,
+														"autowatch" : 1
+													}
+
+												}
+
+											}
+, 											{
+												"box" : 												{
+													"filename" : "hblur.jxs",
+													"id" : "obj-129",
+													"maxclass" : "newobj",
+													"numinlets" : 1,
+													"numoutlets" : 2,
+													"outlettype" : [ "jit_gl_texture", "" ],
+													"patching_rect" : [ 50.0, 100.0, 191.0, 22.0 ],
+													"text" : "jit.gl.slab @file hblur.jxs @inputs 1",
+													"textfile" : 													{
+														"filename" : "hblur.jxs",
+														"flags" : 0,
+														"embed" : 0,
+														"autowatch" : 1
+													}
+
+												}
+
+											}
+, 											{
+												"box" : 												{
+													"comment" : "",
+													"id" : "obj-135",
+													"index" : 1,
+													"maxclass" : "inlet",
+													"numinlets" : 0,
+													"numoutlets" : 1,
+													"outlettype" : [ "" ],
+													"patching_rect" : [ 50.0, 40.0, 30.0, 30.0 ]
+												}
+
+											}
+, 											{
+												"box" : 												{
+													"comment" : "",
+													"id" : "obj-136",
+													"index" : 1,
+													"maxclass" : "outlet",
+													"numinlets" : 1,
+													"numoutlets" : 0,
+													"patching_rect" : [ 50.0, 215.0, 30.0, 30.0 ]
+												}
+
+											}
+ ],
+										"lines" : [ 											{
+												"patchline" : 												{
+													"destination" : [ "obj-136", 0 ],
+													"source" : [ "obj-128", 0 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
+													"destination" : [ "obj-128", 0 ],
+													"source" : [ "obj-129", 0 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
+													"destination" : [ "obj-129", 0 ],
+													"source" : [ "obj-135", 0 ]
+												}
+
+											}
+ ],
+										"originid" : "pat-536"
+									}
+,
+									"patching_rect" : [ 713.0, 32.0, 139.0, 22.0 ],
+									"saved_object_attributes" : 									{
+										"description" : "",
+										"digest" : "",
+										"globalpatchername" : "",
+										"tags" : ""
+									}
+,
+									"text" : "p blur_and_downsample"
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"filename" : "4_tap_blur.jxs",
+									"id" : "obj-152",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_gl_texture", "" ],
+									"patching_rect" : [ 440.0, 577.0, 324.0, 22.0 ],
+									"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
+									"textfile" : 									{
+										"filename" : "4_tap_blur.jxs",
+										"flags" : 0,
+										"embed" : 0,
+										"autowatch" : 1
+									}
+
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"filename" : "4_tap_blur.jxs",
+									"id" : "obj-149",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_gl_texture", "" ],
+									"patching_rect" : [ 373.0, 450.0, 324.0, 22.0 ],
+									"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
+									"textfile" : 									{
+										"filename" : "4_tap_blur.jxs",
+										"flags" : 0,
+										"embed" : 0,
+										"autowatch" : 1
+									}
+
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"filename" : "4_tap_blur.jxs",
+									"id" : "obj-146",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_gl_texture", "" ],
+									"patching_rect" : [ 279.0, 366.0, 324.0, 22.0 ],
+									"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
+									"textfile" : 									{
+										"filename" : "4_tap_blur.jxs",
+										"flags" : 0,
+										"embed" : 0,
+										"autowatch" : 1
+									}
+
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"filename" : "4_tap_blur.jxs",
+									"id" : "obj-143",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_gl_texture", "" ],
+									"patching_rect" : [ 167.0, 293.0, 324.0, 22.0 ],
+									"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
+									"textfile" : 									{
+										"filename" : "4_tap_blur.jxs",
+										"flags" : 0,
+										"embed" : 0,
+										"autowatch" : 1
+									}
+
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"filename" : "4_tap_blur.jxs",
+									"id" : "obj-140",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_gl_texture", "" ],
+									"patching_rect" : [ 92.0, 211.0, 324.0, 22.0 ],
+									"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
+									"textfile" : 									{
+										"filename" : "4_tap_blur.jxs",
+										"flags" : 0,
+										"embed" : 0,
+										"autowatch" : 1
+									}
+
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"filename" : "4_tap_blur.jxs",
+									"id" : "obj-137",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_gl_texture", "" ],
+									"patching_rect" : [ 14.0, 137.0, 324.0, 22.0 ],
+									"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
+									"textfile" : 									{
+										"filename" : "4_tap_blur.jxs",
+										"flags" : 0,
+										"embed" : 0,
+										"autowatch" : 1
+									}
+
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"filename" : "4_tap_blur.jxs",
+									"id" : "obj-134",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 2,
+									"outlettype" : [ "jit_gl_texture", "" ],
+									"patching_rect" : [ 707.0, 83.0, 324.0, 22.0 ],
+									"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
+									"textfile" : 									{
+										"filename" : "4_tap_blur.jxs",
+										"flags" : 0,
+										"embed" : 0,
+										"autowatch" : 1
+									}
+
+								}
+
+							}
+, 							{
 								"box" : 								{
 									"id" : "obj-130",
 									"maxclass" : "newobj",
@@ -437,58 +535,6 @@
 							}
 , 							{
 								"box" : 								{
-									"filename" : "vblur.jxs",
-									"id" : "obj-128",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 14.0, 170.0, 293.0, 22.0 ],
-									"text" : "jit.gl.slab @file vblur.jxs @inputs 1 @dimscale 0.5 0.5",
-									"textfile" : 									{
-										"filename" : "vblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "hblur.jxs",
-									"id" : "obj-129",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 14.0, 137.0, 191.0, 22.0 ],
-									"text" : "jit.gl.slab @file hblur.jxs @inputs 1",
-									"textfile" : 									{
-										"filename" : "hblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"id" : "obj-127",
-									"maxclass" : "jit.pwindow",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_matrix", "" ],
-									"patching_rect" : [ 456.0, 124.0, 328.0, 254.0 ],
-									"sync" : 1
-								}
-
-							}
-, 							{
-								"box" : 								{
 									"id" : "obj-126",
 									"maxclass" : "newobj",
 									"numinlets" : 2,
@@ -535,6 +581,26 @@
 										"assistshowspatchername" : 0,
 										"boxes" : [ 											{
 												"box" : 												{
+													"filename" : "lancsozUpsampling.jxs",
+													"id" : "obj-121",
+													"maxclass" : "newobj",
+													"numinlets" : 1,
+													"numoutlets" : 2,
+													"outlettype" : [ "jit_gl_texture", "" ],
+													"patching_rect" : [ 187.0, 222.0, 269.0, 22.0 ],
+													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"textfile" : 													{
+														"filename" : "lancsozUpsampling.jxs",
+														"flags" : 0,
+														"embed" : 0,
+														"autowatch" : 1
+													}
+
+												}
+
+											}
+, 											{
+												"box" : 												{
 													"filename" : "none",
 													"id" : "obj-117",
 													"maxclass" : "newobj",
@@ -556,16 +622,16 @@
 											}
 , 											{
 												"box" : 												{
-													"filename" : "lancsozUpsampling.jxs",
+													"filename" : "4_tap_blur.jxs",
 													"id" : "obj-107",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "jit_gl_texture", "" ],
-													"patching_rect" : [ 118.0, 144.0, 269.0, 22.0 ],
-													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"patching_rect" : [ 118.0, 144.0, 324.0, 22.0 ],
+													"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
 													"textfile" : 													{
-														"filename" : "lancsozUpsampling.jxs",
+														"filename" : "4_tap_blur.jxs",
 														"flags" : 0,
 														"embed" : 0,
 														"autowatch" : 1
@@ -648,11 +714,11 @@
 																"box" : 																{
 																	"id" : "obj-3",
 																	"maxclass" : "newobj",
-																	"numinlets" : 3,
+																	"numinlets" : 2,
 																	"numoutlets" : 1,
 																	"outlettype" : [ "" ],
-																	"patching_rect" : [ 176.0, 149.0, 40.0, 22.0 ],
-																	"text" : "mix"
+																	"patching_rect" : [ 176.0, 149.0, 29.5, 22.0 ],
+																	"text" : "+"
 																}
 
 															}
@@ -690,7 +756,7 @@
 
 															}
  ],
-														"originid" : "pat-510"
+														"originid" : "pat-576"
 													}
 ,
 													"patching_rect" : [ 50.0, 191.0, 49.0, 22.0 ],
@@ -773,7 +839,7 @@
 
 											}
  ],
-										"originid" : "pat-508"
+										"originid" : "pat-574"
 									}
 ,
 									"patching_rect" : [ -96.0, 1217.0, 116.0, 22.0 ],
@@ -836,6 +902,26 @@
 										"assistshowspatchername" : 0,
 										"boxes" : [ 											{
 												"box" : 												{
+													"filename" : "lancsozUpsampling.jxs",
+													"id" : "obj-121",
+													"maxclass" : "newobj",
+													"numinlets" : 1,
+													"numoutlets" : 2,
+													"outlettype" : [ "jit_gl_texture", "" ],
+													"patching_rect" : [ 187.0, 222.0, 269.0, 22.0 ],
+													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"textfile" : 													{
+														"filename" : "lancsozUpsampling.jxs",
+														"flags" : 0,
+														"embed" : 0,
+														"autowatch" : 1
+													}
+
+												}
+
+											}
+, 											{
+												"box" : 												{
 													"filename" : "none",
 													"id" : "obj-117",
 													"maxclass" : "newobj",
@@ -857,16 +943,16 @@
 											}
 , 											{
 												"box" : 												{
-													"filename" : "lancsozUpsampling.jxs",
+													"filename" : "4_tap_blur.jxs",
 													"id" : "obj-107",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "jit_gl_texture", "" ],
-													"patching_rect" : [ 118.0, 144.0, 269.0, 22.0 ],
-													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"patching_rect" : [ 118.0, 144.0, 324.0, 22.0 ],
+													"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
 													"textfile" : 													{
-														"filename" : "lancsozUpsampling.jxs",
+														"filename" : "4_tap_blur.jxs",
 														"flags" : 0,
 														"embed" : 0,
 														"autowatch" : 1
@@ -949,11 +1035,11 @@
 																"box" : 																{
 																	"id" : "obj-3",
 																	"maxclass" : "newobj",
-																	"numinlets" : 3,
+																	"numinlets" : 2,
 																	"numoutlets" : 1,
 																	"outlettype" : [ "" ],
-																	"patching_rect" : [ 176.0, 149.0, 40.0, 22.0 ],
-																	"text" : "mix"
+																	"patching_rect" : [ 176.0, 149.0, 29.5, 22.0 ],
+																	"text" : "+"
 																}
 
 															}
@@ -991,7 +1077,7 @@
 
 															}
  ],
-														"originid" : "pat-506"
+														"originid" : "pat-572"
 													}
 ,
 													"patching_rect" : [ 50.0, 191.0, 49.0, 22.0 ],
@@ -1074,7 +1160,7 @@
 
 											}
  ],
-										"originid" : "pat-504"
+										"originid" : "pat-570"
 									}
 ,
 									"patching_rect" : [ 6.0, 1129.0, 116.0, 22.0 ],
@@ -1137,6 +1223,26 @@
 										"assistshowspatchername" : 0,
 										"boxes" : [ 											{
 												"box" : 												{
+													"filename" : "lancsozUpsampling.jxs",
+													"id" : "obj-121",
+													"maxclass" : "newobj",
+													"numinlets" : 1,
+													"numoutlets" : 2,
+													"outlettype" : [ "jit_gl_texture", "" ],
+													"patching_rect" : [ 187.0, 222.0, 269.0, 22.0 ],
+													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"textfile" : 													{
+														"filename" : "lancsozUpsampling.jxs",
+														"flags" : 0,
+														"embed" : 0,
+														"autowatch" : 1
+													}
+
+												}
+
+											}
+, 											{
+												"box" : 												{
 													"filename" : "none",
 													"id" : "obj-117",
 													"maxclass" : "newobj",
@@ -1158,16 +1264,16 @@
 											}
 , 											{
 												"box" : 												{
-													"filename" : "lancsozUpsampling.jxs",
+													"filename" : "4_tap_blur.jxs",
 													"id" : "obj-107",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "jit_gl_texture", "" ],
-													"patching_rect" : [ 118.0, 144.0, 269.0, 22.0 ],
-													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"patching_rect" : [ 118.0, 144.0, 324.0, 22.0 ],
+													"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
 													"textfile" : 													{
-														"filename" : "lancsozUpsampling.jxs",
+														"filename" : "4_tap_blur.jxs",
 														"flags" : 0,
 														"embed" : 0,
 														"autowatch" : 1
@@ -1250,11 +1356,11 @@
 																"box" : 																{
 																	"id" : "obj-3",
 																	"maxclass" : "newobj",
-																	"numinlets" : 3,
+																	"numinlets" : 2,
 																	"numoutlets" : 1,
 																	"outlettype" : [ "" ],
-																	"patching_rect" : [ 176.0, 149.0, 40.0, 22.0 ],
-																	"text" : "mix"
+																	"patching_rect" : [ 176.0, 149.0, 29.5, 22.0 ],
+																	"text" : "+"
 																}
 
 															}
@@ -1292,7 +1398,7 @@
 
 															}
  ],
-														"originid" : "pat-502"
+														"originid" : "pat-568"
 													}
 ,
 													"patching_rect" : [ 50.0, 191.0, 49.0, 22.0 ],
@@ -1375,7 +1481,7 @@
 
 											}
  ],
-										"originid" : "pat-500"
+										"originid" : "pat-566"
 									}
 ,
 									"patching_rect" : [ 80.0, 1018.0, 116.0, 22.0 ],
@@ -1438,6 +1544,26 @@
 										"assistshowspatchername" : 0,
 										"boxes" : [ 											{
 												"box" : 												{
+													"filename" : "lancsozUpsampling.jxs",
+													"id" : "obj-121",
+													"maxclass" : "newobj",
+													"numinlets" : 1,
+													"numoutlets" : 2,
+													"outlettype" : [ "jit_gl_texture", "" ],
+													"patching_rect" : [ 187.0, 222.0, 269.0, 22.0 ],
+													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"textfile" : 													{
+														"filename" : "lancsozUpsampling.jxs",
+														"flags" : 0,
+														"embed" : 0,
+														"autowatch" : 1
+													}
+
+												}
+
+											}
+, 											{
+												"box" : 												{
 													"filename" : "none",
 													"id" : "obj-117",
 													"maxclass" : "newobj",
@@ -1459,16 +1585,16 @@
 											}
 , 											{
 												"box" : 												{
-													"filename" : "lancsozUpsampling.jxs",
+													"filename" : "4_tap_blur.jxs",
 													"id" : "obj-107",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "jit_gl_texture", "" ],
-													"patching_rect" : [ 118.0, 144.0, 269.0, 22.0 ],
-													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"patching_rect" : [ 118.0, 144.0, 324.0, 22.0 ],
+													"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
 													"textfile" : 													{
-														"filename" : "lancsozUpsampling.jxs",
+														"filename" : "4_tap_blur.jxs",
 														"flags" : 0,
 														"embed" : 0,
 														"autowatch" : 1
@@ -1551,11 +1677,11 @@
 																"box" : 																{
 																	"id" : "obj-3",
 																	"maxclass" : "newobj",
-																	"numinlets" : 3,
+																	"numinlets" : 2,
 																	"numoutlets" : 1,
 																	"outlettype" : [ "" ],
-																	"patching_rect" : [ 176.0, 149.0, 40.0, 22.0 ],
-																	"text" : "mix"
+																	"patching_rect" : [ 176.0, 149.0, 29.5, 22.0 ],
+																	"text" : "+"
 																}
 
 															}
@@ -1593,7 +1719,7 @@
 
 															}
  ],
-														"originid" : "pat-498"
+														"originid" : "pat-564"
 													}
 ,
 													"patching_rect" : [ 50.0, 191.0, 49.0, 22.0 ],
@@ -1676,7 +1802,7 @@
 
 											}
  ],
-										"originid" : "pat-496"
+										"originid" : "pat-562"
 									}
 ,
 									"patching_rect" : [ 160.0, 959.0, 116.0, 22.0 ],
@@ -1739,6 +1865,26 @@
 										"assistshowspatchername" : 0,
 										"boxes" : [ 											{
 												"box" : 												{
+													"filename" : "lancsozUpsampling.jxs",
+													"id" : "obj-121",
+													"maxclass" : "newobj",
+													"numinlets" : 1,
+													"numoutlets" : 2,
+													"outlettype" : [ "jit_gl_texture", "" ],
+													"patching_rect" : [ 187.0, 222.0, 269.0, 22.0 ],
+													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"textfile" : 													{
+														"filename" : "lancsozUpsampling.jxs",
+														"flags" : 0,
+														"embed" : 0,
+														"autowatch" : 1
+													}
+
+												}
+
+											}
+, 											{
+												"box" : 												{
 													"filename" : "none",
 													"id" : "obj-117",
 													"maxclass" : "newobj",
@@ -1760,16 +1906,16 @@
 											}
 , 											{
 												"box" : 												{
-													"filename" : "lancsozUpsampling.jxs",
+													"filename" : "4_tap_blur.jxs",
 													"id" : "obj-107",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "jit_gl_texture", "" ],
-													"patching_rect" : [ 118.0, 144.0, 269.0, 22.0 ],
-													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"patching_rect" : [ 118.0, 144.0, 324.0, 22.0 ],
+													"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
 													"textfile" : 													{
-														"filename" : "lancsozUpsampling.jxs",
+														"filename" : "4_tap_blur.jxs",
 														"flags" : 0,
 														"embed" : 0,
 														"autowatch" : 1
@@ -1852,11 +1998,11 @@
 																"box" : 																{
 																	"id" : "obj-3",
 																	"maxclass" : "newobj",
-																	"numinlets" : 3,
+																	"numinlets" : 2,
 																	"numoutlets" : 1,
 																	"outlettype" : [ "" ],
-																	"patching_rect" : [ 176.0, 149.0, 40.0, 22.0 ],
-																	"text" : "mix"
+																	"patching_rect" : [ 176.0, 149.0, 29.5, 22.0 ],
+																	"text" : "+"
 																}
 
 															}
@@ -1894,7 +2040,7 @@
 
 															}
  ],
-														"originid" : "pat-494"
+														"originid" : "pat-560"
 													}
 ,
 													"patching_rect" : [ 50.0, 191.0, 49.0, 22.0 ],
@@ -1977,7 +2123,7 @@
 
 											}
  ],
-										"originid" : "pat-492"
+										"originid" : "pat-558"
 									}
 ,
 									"patching_rect" : [ 265.0, 875.0, 116.0, 22.0 ],
@@ -2040,6 +2186,26 @@
 										"assistshowspatchername" : 0,
 										"boxes" : [ 											{
 												"box" : 												{
+													"filename" : "lancsozUpsampling.jxs",
+													"id" : "obj-121",
+													"maxclass" : "newobj",
+													"numinlets" : 1,
+													"numoutlets" : 2,
+													"outlettype" : [ "jit_gl_texture", "" ],
+													"patching_rect" : [ 187.0, 222.0, 269.0, 22.0 ],
+													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"textfile" : 													{
+														"filename" : "lancsozUpsampling.jxs",
+														"flags" : 0,
+														"embed" : 0,
+														"autowatch" : 1
+													}
+
+												}
+
+											}
+, 											{
+												"box" : 												{
 													"filename" : "none",
 													"id" : "obj-117",
 													"maxclass" : "newobj",
@@ -2061,16 +2227,16 @@
 											}
 , 											{
 												"box" : 												{
-													"filename" : "lancsozUpsampling.jxs",
+													"filename" : "4_tap_blur.jxs",
 													"id" : "obj-107",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "jit_gl_texture", "" ],
-													"patching_rect" : [ 118.0, 144.0, 269.0, 22.0 ],
-													"text" : "jit.gl.slab @file lancsozUpsampling.jxs @inputs 1",
+													"patching_rect" : [ 118.0, 144.0, 324.0, 22.0 ],
+													"text" : "jit.gl.slab @file 4_tap_blur.jxs @inputs 1 @dimscale 0.5 0.5",
 													"textfile" : 													{
-														"filename" : "lancsozUpsampling.jxs",
+														"filename" : "4_tap_blur.jxs",
 														"flags" : 0,
 														"embed" : 0,
 														"autowatch" : 1
@@ -2153,11 +2319,11 @@
 																"box" : 																{
 																	"id" : "obj-3",
 																	"maxclass" : "newobj",
-																	"numinlets" : 3,
+																	"numinlets" : 2,
 																	"numoutlets" : 1,
 																	"outlettype" : [ "" ],
-																	"patching_rect" : [ 176.0, 149.0, 40.0, 22.0 ],
-																	"text" : "mix"
+																	"patching_rect" : [ 176.0, 149.0, 29.5, 22.0 ],
+																	"text" : "+"
 																}
 
 															}
@@ -2195,7 +2361,7 @@
 
 															}
  ],
-														"originid" : "pat-486"
+														"originid" : "pat-556"
 													}
 ,
 													"patching_rect" : [ 50.0, 191.0, 49.0, 22.0 ],
@@ -2278,7 +2444,7 @@
 
 											}
  ],
-										"originid" : "pat-484"
+										"originid" : "pat-554"
 									}
 ,
 									"patching_rect" : [ 362.0, 803.0, 116.0, 22.0 ],
@@ -2329,206 +2495,6 @@
 									"outlettype" : [ "jit_matrix", "" ],
 									"patching_rect" : [ 1004.0, 924.0, 434.0, 338.0 ],
 									"sync" : 1
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "vblur.jxs",
-									"id" : "obj-83",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 440.0, 610.0, 293.0, 22.0 ],
-									"text" : "jit.gl.slab @file vblur.jxs @inputs 1 @dimscale 0.5 0.5",
-									"textfile" : 									{
-										"filename" : "vblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "hblur.jxs",
-									"id" : "obj-84",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 440.0, 577.0, 191.0, 22.0 ],
-									"text" : "jit.gl.slab @file hblur.jxs @inputs 1",
-									"textfile" : 									{
-										"filename" : "hblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "vblur.jxs",
-									"id" : "obj-73",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 373.0, 483.0, 293.0, 22.0 ],
-									"text" : "jit.gl.slab @file vblur.jxs @inputs 1 @dimscale 0.5 0.5",
-									"textfile" : 									{
-										"filename" : "vblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "hblur.jxs",
-									"id" : "obj-74",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 373.0, 450.0, 191.0, 22.0 ],
-									"text" : "jit.gl.slab @file hblur.jxs @inputs 1",
-									"textfile" : 									{
-										"filename" : "hblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "vblur.jxs",
-									"id" : "obj-75",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 279.0, 399.0, 293.0, 22.0 ],
-									"text" : "jit.gl.slab @file vblur.jxs @inputs 1 @dimscale 0.5 0.5",
-									"textfile" : 									{
-										"filename" : "vblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "hblur.jxs",
-									"id" : "obj-76",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 279.0, 366.0, 191.0, 22.0 ],
-									"text" : "jit.gl.slab @file hblur.jxs @inputs 1",
-									"textfile" : 									{
-										"filename" : "hblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "vblur.jxs",
-									"id" : "obj-71",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 167.0, 326.0, 293.0, 22.0 ],
-									"text" : "jit.gl.slab @file vblur.jxs @inputs 1 @dimscale 0.5 0.5",
-									"textfile" : 									{
-										"filename" : "vblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "hblur.jxs",
-									"id" : "obj-72",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 167.0, 293.0, 191.0, 22.0 ],
-									"text" : "jit.gl.slab @file hblur.jxs @inputs 1",
-									"textfile" : 									{
-										"filename" : "hblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "vblur.jxs",
-									"id" : "obj-57",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 92.0, 244.0, 293.0, 22.0 ],
-									"text" : "jit.gl.slab @file vblur.jxs @inputs 1 @dimscale 0.5 0.5",
-									"textfile" : 									{
-										"filename" : "vblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"filename" : "hblur.jxs",
-									"id" : "obj-58",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "jit_gl_texture", "" ],
-									"patching_rect" : [ 92.0, 211.0, 191.0, 22.0 ],
-									"text" : "jit.gl.slab @file hblur.jxs @inputs 1",
-									"textfile" : 									{
-										"filename" : "hblur.jxs",
-										"flags" : 0,
-										"embed" : 0,
-										"autowatch" : 1
-									}
-
 								}
 
 							}
@@ -2915,29 +2881,6 @@
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-125", 0 ],
-									"order" : 1,
-									"source" : [ "obj-128", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-58", 0 ],
-									"order" : 0,
-									"source" : [ "obj-128", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-128", 0 ],
-									"source" : [ "obj-129", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
 									"destination" : [ "obj-126", 1 ],
 									"source" : [ "obj-130", 0 ]
 								}
@@ -2966,24 +2909,33 @@
 							}
 , 							{
 								"patchline" : 								{
+									"destination" : [ "obj-125", 0 ],
+									"order" : 1,
+									"source" : [ "obj-137", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-140", 0 ],
+									"order" : 0,
+									"source" : [ "obj-137", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
 									"destination" : [ "obj-124", 0 ],
 									"order" : 1,
-									"source" : [ "obj-57", 0 ]
+									"source" : [ "obj-140", 0 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-72", 0 ],
+									"destination" : [ "obj-143", 0 ],
 									"order" : 0,
-									"source" : [ "obj-57", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-57", 0 ],
-									"source" : [ "obj-58", 0 ]
+									"source" : [ "obj-140", 0 ]
 								}
 
 							}
@@ -2991,45 +2943,15 @@
 								"patchline" : 								{
 									"destination" : [ "obj-123", 0 ],
 									"order" : 1,
-									"source" : [ "obj-71", 0 ]
+									"source" : [ "obj-143", 0 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-76", 0 ],
+									"destination" : [ "obj-146", 0 ],
 									"order" : 0,
-									"source" : [ "obj-71", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-71", 0 ],
-									"source" : [ "obj-72", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-121", 0 ],
-									"order" : 1,
-									"source" : [ "obj-73", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-84", 0 ],
-									"order" : 0,
-									"source" : [ "obj-73", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-73", 0 ],
-									"source" : [ "obj-74", 0 ]
+									"source" : [ "obj-143", 0 ]
 								}
 
 							}
@@ -3037,51 +2959,69 @@
 								"patchline" : 								{
 									"destination" : [ "obj-122", 0 ],
 									"order" : 1,
-									"source" : [ "obj-75", 0 ]
+									"source" : [ "obj-146", 0 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-74", 0 ],
+									"destination" : [ "obj-149", 0 ],
 									"order" : 0,
-									"source" : [ "obj-75", 0 ]
+									"source" : [ "obj-146", 0 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-75", 0 ],
-									"source" : [ "obj-76", 0 ]
+									"destination" : [ "obj-121", 0 ],
+									"order" : 1,
+									"source" : [ "obj-149", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-152", 0 ],
+									"order" : 0,
+									"source" : [ "obj-149", 0 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
 									"destination" : [ "obj-121", 1 ],
-									"source" : [ "obj-83", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-83", 0 ],
-									"source" : [ "obj-84", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-127", 0 ],
 									"order" : 0,
+									"source" : [ "obj-152", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-156", 0 ],
+									"order" : 1,
+									"source" : [ "obj-152", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-155", 0 ],
+									"source" : [ "obj-156", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-137", 0 ],
+									"order" : 1,
 									"source" : [ "obj-9", 0 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-129", 0 ],
-									"order" : 1,
+									"destination" : [ "obj-154", 0 ],
+									"order" : 0,
 									"source" : [ "obj-9", 0 ]
 								}
 
@@ -3090,7 +3030,7 @@
 						"originid" : "pat-394"
 					}
 ,
-					"patching_rect" : [ 640.0, 2581.0, 51.0, 22.0 ],
+					"patching_rect" : [ 642.0, 2581.0, 51.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"description" : "",
 						"digest" : "",
@@ -3109,7 +3049,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 1337.0, 1658.0, 80.0, 60.0 ],
+					"patching_rect" : [ 1265.0, 1624.0, 80.0, 60.0 ],
 					"sync" : 1
 				}
 
@@ -9334,7 +9274,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 1356.0, 1224.0, 70.0, 22.0 ],
-					"text" : "loadmess 1"
+					"text" : "loadmess 2"
 				}
 
 			}
@@ -15194,103 +15134,8 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-303", 0 ],
-					"source" : [ "obj-295", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-295", 0 ],
-					"order" : 1,
-					"source" : [ "obj-296", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-302", 0 ],
-					"order" : 0,
-					"source" : [ "obj-296", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-296", 0 ],
-					"source" : [ "obj-298", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-175", 0 ],
 					"source" : [ "obj-3", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-299", 0 ],
-					"source" : [ "obj-300", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-301", 0 ],
-					"source" : [ "obj-302", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-304", 0 ],
-					"source" : [ "obj-303", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-305", 0 ],
-					"source" : [ "obj-304", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-306", 0 ],
-					"source" : [ "obj-305", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-309", 0 ],
-					"source" : [ "obj-306", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-300", 0 ],
-					"order" : 0,
-					"source" : [ "obj-307", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-308", 0 ],
-					"order" : 1,
-					"source" : [ "obj-307", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-307", 0 ],
-					"source" : [ "obj-309", 0 ]
 				}
 
 			}
