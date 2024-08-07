@@ -3411,7 +3411,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 1088.0, 2399.0, 206.0, 22.0 ],
+					"patching_rect" : [ 940.0, 2343.0, 206.0, 22.0 ],
 					"text" : "jit.gl.slab @file through.jxs @inputs 1",
 					"textfile" : 					{
 						"filename" : "through.jxs",
@@ -3431,7 +3431,7 @@
 					"numinlets" : 3,
 					"numoutlets" : 2,
 					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ 880.0, 2439.0, 403.0, 22.0 ],
+					"patching_rect" : [ 732.0, 2383.0, 403.0, 22.0 ],
 					"text" : "jit.gl.slab @file temporalFilter.jxs @inputs 3 @variance_clipping_gamma 1",
 					"textfile" : 					{
 						"filename" : "temporalFilter.jxs",
@@ -4252,7 +4252,7 @@
 						"originid" : "pat-323"
 					}
 ,
-					"patching_rect" : [ 737.0, 2369.0, 226.5, 22.0 ],
+					"patching_rect" : [ 847.0, 2483.0, 226.5, 22.0 ],
 					"text" : "jit.gl.pix"
 				}
 
@@ -5640,26 +5640,6 @@
 			}
 , 			{
 				"box" : 				{
-					"filename" : "clamp_reservoir_weights.jxs",
-					"id" : "obj-163",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ -1224.0, 1818.0, 298.0, 22.0 ],
-					"text" : "jit.gl.slab @file clamp_reservoir_weights.jxs @inputs 1",
-					"textfile" : 					{
-						"filename" : "clamp_reservoir_weights.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
-				}
-
-			}
-, 			{
-				"box" : 				{
 					"id" : "obj-93",
 					"maxclass" : "comment",
 					"numinlets" : 1,
@@ -5691,26 +5671,6 @@
 					"outlettype" : [ "" ],
 					"parameter_enable" : 0,
 					"patching_rect" : [ 1607.0, -344.0, 222.115392029285431, 22.0 ]
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"filename" : "clamp_reservoir_weights.jxs",
-					"id" : "obj-233",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ -1227.0, 1953.0, 298.0, 22.0 ],
-					"text" : "jit.gl.slab @file clamp_reservoir_weights.jxs @inputs 1",
-					"textfile" : 					{
-						"filename" : "clamp_reservoir_weights.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
 				}
 
 			}
@@ -5851,26 +5811,6 @@
 ,
 					"patching_rect" : [ 713.0, 2289.0, 226.5, 22.0 ],
 					"text" : "jit.gl.pix"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"filename" : "clamp_reservoir_weights.jxs",
-					"id" : "obj-113",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_gl_texture", "" ],
-					"patching_rect" : [ -1206.0, 1678.0, 298.0, 22.0 ],
-					"text" : "jit.gl.slab @file clamp_reservoir_weights.jxs @inputs 1",
-					"textfile" : 					{
-						"filename" : "clamp_reservoir_weights.jxs",
-						"flags" : 0,
-						"embed" : 0,
-						"autowatch" : 1
-					}
-
 				}
 
 			}
@@ -12438,7 +12378,7 @@
 						}
 ,
 						"classnamespace" : "jit.gen",
-						"rect" : [ 59.0, 119.0, 600.0, 450.0 ],
+						"rect" : [ 59.0, 119.0, 873.0, 576.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -12467,6 +12407,21 @@
 						"subpatcher_template" : "",
 						"assistshowspatchername" : 0,
 						"boxes" : [ 							{
+								"box" : 								{
+									"code" : "ACESFilm(x){\n    a = 2.51;\n    b = 0.03;\n    c = 2.43;\n    d = 0.59;\n    e = 0.14;\n    return (x * (a * x + b)) / (x * (c * x + d) + e);\n}\r\n\r\nmapped = ACESFilm(in1.rgb);\r\nout1 = vec(mapped.x, mapped.y, mapped.z, 1);",
+									"fontface" : 0,
+									"fontname" : "<Monospaced>",
+									"fontsize" : 12.0,
+									"id" : "obj-8",
+									"maxclass" : "codebox",
+									"numinlets" : 1,
+									"numoutlets" : 1,
+									"outlettype" : [ "" ],
+									"patching_rect" : [ 273.0, 117.0, 540.0, 282.0 ]
+								}
+
+							}
+, 							{
 								"box" : 								{
 									"id" : "obj-7",
 									"maxclass" : "newobj",
@@ -12529,7 +12484,7 @@
 						"lines" : [ 							{
 								"patchline" : 								{
 									"destination" : [ "obj-5", 0 ],
-									"order" : 1,
+									"order" : 2,
 									"source" : [ "obj-1", 0 ]
 								}
 
@@ -12537,6 +12492,14 @@
 , 							{
 								"patchline" : 								{
 									"destination" : [ "obj-6", 0 ],
+									"order" : 1,
+									"source" : [ "obj-1", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-8", 0 ],
 									"order" : 0,
 									"source" : [ "obj-1", 0 ]
 								}
