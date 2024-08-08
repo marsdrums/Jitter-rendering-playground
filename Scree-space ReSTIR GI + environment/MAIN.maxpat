@@ -3642,8 +3642,8 @@
 					"numinlets" : 1,
 					"numoutlets" : 3,
 					"outlettype" : [ "jit_gl_texture", "", "" ],
-					"patching_rect" : [ 1265.0, 1547.0, 203.0, 22.0 ],
-					"text" : "jit.gl.node @capture 1 @type float32"
+					"patching_rect" : [ 1265.0, 1547.0, 125.0, 22.0 ],
+					"text" : "jit.gl.node @capture 1"
 				}
 
 			}
@@ -12163,7 +12163,7 @@
 						}
 ,
 						"classnamespace" : "jit.gen",
-						"rect" : [ 808.0, 265.0, 600.0, 450.0 ],
+						"rect" : [ 264.0, 407.0, 600.0, 450.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
