@@ -1,0 +1,228 @@
+<jittershader name="default">
+//https://gist.github.com/tyhenry/3b7c8696d1325136bc32a84e4e0def13
+	<description>Default Slab </description>
+	<param name="renderTex" type="int" default="0" />
+	<param name="depthTex" type="int" default="1" />
+	<param name="modelViewProjectionMatrix" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="position" type="vec3" state="POSITION" />
+	<param name="texcoord" type="vec2" state="TEXCOORD" />
+	<param name="nearClip" type="float" state="NEAR_CLIP" />
+	<param name="farClip" type="float" state="FAR_CLIP" />
+	<param name="texDim" type="vec2" state="TEXDIM0" />
+
+	<param name="focalDepth" type="float" default="4.0" />
+	<param name="focalLength" type="float" default="0.8" />
+	<param name="fstop" type="float" default="2.0" />
+	<param name="samples" type="int" default="3" />			//samples on the first ring
+	<param name="rings" type="int" default="3" />			//ring count
+	<param name="ndofstart" type="float" default="1.0" />	//near dof blur start
+	<param name="ndofdist" type="float" default="2.0" />	//near dof blur falloff distance
+	<param name="fdofstart" type="float" default="1.0" />	//far dof blur start
+	<param name="fdofdist" type="float" default="3.0" />	//far dof blur falloff distance
+	<param name="CoC" type="float" default="0.03" />		//circle of confusion size in mm (35mm film = 0.03mm)
+	<param name="maxblur" type="float" default="1.0" />		//clamp value of max blur (0.0 = no blur,1.0 default)
+
+	<param name="threshold" type="float" default="0.7" />	//highlight threshold;
+	<param name="gain" type="float" default="100.0" />		//highlight gain;
+	<param name="bias" type="float" default="0.5" />		//bokeh edge bias
+	<param name="fringe" type="float" default="0.7" />		//bokeh chromatic aberration/fringing
+	<param name="namount" type="float" default="0.0001" />	//dither amount
+	<param name="feather" type="float" default="0.4" />		//pentagon shape feather
+
+	<language name="glsl" version="1.5">
+
+		<bind param="renderTex" program="fp" />
+		<bind param="depthTex" program="fp" />
+		<bind param="modelViewProjectionMatrix" program="vp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="position" program="vp" />
+		<bind param="texcoord" program="vp" />
+		<bind param="nearClip" program="fp" />
+		<bind param="farClip" program="fp" />
+		<bind param="texDim" program="fp" />
+
+		<bind param="focalDepth" program="fp" />
+		<bind param="focalLength" program="fp" />
+		<bind param="fstop" program="fp" />
+		<bind param="samples" program="fp" />
+		<bind param="rings" program="fp" />
+		<bind param="ndofstart" program="fp" />
+		<bind param="ndofdist" program="fp" />
+		<bind param="fdofstart" program="fp" />
+		<bind param="fdofdist" program="fp" />
+		<bind param="CoC" program="fp" />
+		<bind param="maxblur" program="fp" />
+
+		<bind param="threshold" program="fp" />
+		<bind param="gain" program="fp" />
+		<bind param="bias" program="fp" />
+		<bind param="fringe" program="fp" />
+		<bind param="namount" program="fp" />
+		<bind param="feather" program="fp" />
+
+		<program name="vp" type="vertex"  >
+<![CDATA[
+#version 330 core
+
+in vec3 position;
+in vec2 texcoord;
+out jit_PerVertex {
+	vec2 texcoord;
+} jit_out;
+uniform mat4 modelViewProjectionMatrix;
+uniform mat4 textureMatrix0;
+
+void main(void) {
+	gl_Position = modelViewProjectionMatrix*vec4(position, 1.);
+	jit_out.texcoord = vec2(texcoord.x, 1.0 - texcoord.y);//vec2(textureMatrix0*vec4(texcoord, 0., 1.));
+}
+]]>
+</program>
+
+<program name="fp" type="fragment"  >
+<![CDATA[
+#version 330 core
+#define PI 3.14159265
+
+in jit_PerVertex {
+	vec2 texcoord;
+} jit_in;
+layout (location = 0) out vec4 outColor;
+
+uniform sampler2D renderTex, depthTex;
+uniform float nearClip, farClip, focalDepth, focalLength, fstop;
+uniform int samples, rings;
+uniform float ndofstart, ndofdist, fdofstart, fdofdist, CoC, maxblur, threshold, gain, bias, fringe, namount, feather;
+uniform vec2 texDim;
+
+float linearize(float depth)
+{
+	return -farClip * nearClip / (depth*farClip * (farClip - nearClip) - farClip);
+}
+
+float penta(vec2 coords) //pentagonal shape
+{
+	float scale = float(rings) - 1.3;
+	vec4  HS0 = vec4( 1.0,         0.0,         0.0,  1.0);
+	vec4  HS1 = vec4( 0.309016994, 0.951056516, 0.0,  1.0);
+	vec4  HS2 = vec4(-0.809016994, 0.587785252, 0.0,  1.0);
+	vec4  HS3 = vec4(-0.809016994,-0.587785252, 0.0,  1.0);
+	vec4  HS4 = vec4( 0.309016994,-0.951056516, 0.0,  1.0);
+	vec4  HS5 = vec4( 0.0        ,0.0         , 1.0,  1.0);
+	
+	vec4  one = vec4( 1.0 );
+	
+	vec4 P = vec4((coords),vec2(scale, scale)); 
+	
+	vec4 dist = vec4(0.0);
+	float inorout = -4.0;
+	
+	dist.x = dot( P, HS0 );
+	dist.y = dot( P, HS1 );
+	dist.z = dot( P, HS2 );
+	dist.w = dot( P, HS3 );
+	
+	dist = smoothstep( -feather, feather, dist );
+	
+	inorout += dot( dist, one );
+	
+	dist.x = dot( P, HS4 );
+	dist.y = HS5.w - abs( P.z );
+	
+	dist = smoothstep( -feather, feather, dist );
+	inorout += dist.x;
+	
+	return clamp( inorout, 0.0, 1.0 );
+}
+
+
+vec2 rand(vec2 coord) //generating noise/pattern texture for dithering
+{
+	float noiseX = clamp(fract(sin(dot(coord ,vec2(12.9898,78.233))) * 43758.5453),0.0,1.0)*2.0-1.0;
+	float noiseY = clamp(fract(sin(dot(coord ,vec2(12.9898,78.233)*2.0)) * 43758.5453),0.0,1.0)*2.0-1.0;
+	return vec2(noiseX,noiseY);
+}
+
+vec3 color(vec2 coords,float blur) //processing the sample
+{
+	vec3 col = vec3(0.0);
+	
+	vec2 texel = vec2(1.0) / texDim;
+	col.r = texture(renderTex,coords + vec2(0.0,1.0)*texel*fringe*blur).r;
+	col.g = texture(renderTex,coords + vec2(-0.866,-0.5)*texel*fringe*blur).g;
+	col.b = texture(renderTex,coords + vec2(0.866,-0.5)*texel*fringe*blur).b;
+	
+	vec3 lumcoeff = vec3(0.299,0.587,0.114);
+	float lum = dot(col.rgb, lumcoeff);
+	float thresh = max((lum-threshold)*gain, 0.0);
+	return col + mix(vec3(0.0),col,thresh*blur);
+}
+
+void main(void) {
+	
+	float depth = texture(depthTex, jit_in.texcoord).w;
+	depth = depth == 0 ? 1.0 : depth;
+	
+
+	float fDepth = focalDepth / farClip;
+	float blur;
+
+	float f = focalLength; //focal length in mm
+	float d = fDepth*1000.0; //focal plane in mm
+	float o = depth*1000.0; //depth in mm
+	
+	float a = (o*f)/(o-f); 
+	float b = (d*f)/(d-f); 
+	float c = (d-f)/(d*fstop*CoC); 
+	
+	blur = clamp( abs(a-b)*c, 0.0, 1.0 );
+
+	vec2 noise = rand(jit_in.texcoord)*namount*blur;
+
+	float w = (1.0/texDim.x)*blur*maxblur+noise.x;
+	float h = (1.0/texDim.y)*blur*maxblur+noise.y;
+
+	vec3 col = vec3(0.0);
+	const bool pentagon = false;
+	
+	//if(blur < 0.05) //some optimization thingy
+	//{
+	//	col = texture(renderTex, jit_in.texcoord).rgb;
+	//}
+
+	//else
+	{
+		col = texture(renderTex, jit_in.texcoord).rgb;
+		float s = 1.0;
+		int ringsamples;
+		
+		for (int i = 1; i <= rings; i ++)
+		{   
+			ringsamples = i * samples;
+			
+			for (int j = 0 ; j < ringsamples ; j += 1)   
+			{
+				float step = PI*2.0 / float(ringsamples);
+				float pw = (cos(float(j)*step)*float(i));
+				float ph = (sin(float(j)*step)*float(i));
+				float p = 1.0;
+				
+				if (pentagon)
+				{ 
+					p = penta(vec2(pw,ph));
+				}
+				
+				col += color(jit_in.texcoord + vec2(pw*w,ph*h), blur) * mix(1.0, (float(i))/(float(rings)), bias) * p;  
+				s += 1.0 * mix(1.0, (float(i))/(float(rings)), bias) * p;   
+			}
+		}
+		col /= s; //divide by sample count
+	}
+
+	outColor = vec4( col, 1.0 );
+}
+]]>
+</program>
+</language>
+</jittershader>
