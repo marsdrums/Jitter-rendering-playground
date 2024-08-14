@@ -453,8 +453,8 @@ vec4 gather_samples(in sample this_s, inout uint seed, out float p_hat){
 
     vec4 reservoir = vec4(0); //curr reservoir
 
-	int M = 8; //num of from the view port
-	int J = 8; //num of samples from the environment map
+	int M = 4; //num of from the view port
+	int J = 4; //num of samples from the environment map
 
 	int sample_index;
 	vec2 sample_uv;
