@@ -156,7 +156,7 @@ void main(void) {
 	test_color = texelFetch(imgTex, ivec2(jit_in.uv) + ivec2(+1,+1)).rgb;
 	curr_col_blurred += test_color*0.0947;
 	minColor = min(minColor, test_color); maxColor = max(maxColor, test_color);
-	
+*/
 
 	float hist = texelFetch(accumTex, ivec2(c.repUV)).w;
 
@@ -176,7 +176,7 @@ void main(void) {
 	//vec3 accumulated_col = 0.1*c.col + 0.9*p.col;
 	//outCol.rgb = mix(accumulated_col, curr_col_blurred, weight);
 	//outCol.rgb = mix(accumulated_col, c.col, min(1.0, weight*200));
-*/
+
 	outCol.rgb = p.col;
 	//outCol.rgb = mix(accumulated_col, curr_col_blurred, min(1.0, weight*200));
 	//hist += 1;

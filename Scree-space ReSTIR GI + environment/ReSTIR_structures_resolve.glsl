@@ -12,7 +12,7 @@ in jit_PerVertex {
 } jit_in;
 
 
-uniform sampler2DRect dummyTex, reservoirTex, colTex, norDepthTex, velTex, posTex, albTex, environmentMap;
+uniform sampler2DRect dummyTex, reservoirTex, colTex, norDepthTex, velTex, posTex, albTex, environmentMap, roughMetalTex;
 uniform int frame;
 uniform vec2 texDim, mapSize;
 uniform mat4 prevMVP, invV, MV, MVP, VP, V, projmat, textureMatrix0;
@@ -31,4 +31,6 @@ struct sample{
 	float id;
 	vec3 ref;
 	vec3 view;
+	float rou;
+	float met;
 };

@@ -46,7 +46,7 @@ out vec4 color;
 void main() {
 
 	float depth = jit_in.vPos.z;//length(jit_in.vPos) / farClip;
-	if(depth <= texture(prevDepthTex, vec2(gl_FragCoord.x, texDim.y - gl_FragCoord.y)).r) discard;
+	if(depth >= texelFetch(prevDepthTex, ivec2(gl_FragCoord.x, texDim.y - gl_FragCoord.y)).r) discard;
 	color = vec4(depth,depth,depth,0);
 }	
 ]]>

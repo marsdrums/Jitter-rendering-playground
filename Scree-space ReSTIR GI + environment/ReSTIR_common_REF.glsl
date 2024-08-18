@@ -38,14 +38,14 @@ bool get_exit_distance_from_frustum(in vec3 ro, in vec3 rd, in vec4 plane, out f
 vec2 get_sample_uv(in sample this_s, inout uint seed){
 
   	float resolution  = 0.3;
-  	int   steps       = 10;
+  	int   steps       = 3;
 
  	vec4 startView = vec4(this_s.pos, 1);
 
  	bool valid = false;
  	vec3 pivot;
  	for(int k = 0; k < 20; k++){
-			pivot = normalize(this_s.ref + randomUnitVector3(seed)*roughness*roughness);
+			pivot = normalize(this_s.ref + randomUnitVector3(seed)*this_s.rou*this_s.rou);
 			if( dot(pivot, this_s.nor) > 0 ){
 				valid = true;
 				break;
@@ -183,9 +183,10 @@ vec2 cartesianToUv(vec3 cartesian) {
     return vec2(theta, phi);
 }
 
+/*
 vec2 get_sample_uv_for_env(inout uint seed, in vec3 ref){
 
-	vec3 rand_dir = normalize(ref + randomUnitVector3(seed)*roughness);
+	vec3 rand_dir = normalize(ref + randomUnitVector3(seed)*this_s.rou);
 	//rand_dir *= dot(rand_dir, nor) > 0.0 ? 1 : -1;
 	vec2 uv = vec2(atan(rand_dir.z, rand_dir.x), asin(rand_dir.y));
     uv *= vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
@@ -198,7 +199,7 @@ vec2 get_sample_uv_for_env(inout uint seed, in vec3 ref){
 	//vec2 randOffset = 0.5*(vec2(RandomFloat01(seed)-0.5, RandomFloat01(seed))-0.5);
 	//return vec2(RandomFloat01(seed), RandomFloat01(seed))*mapSize;//mod(center + randOffset, vec2(1.0))*mapSize;
 }
-
+*/
 bool valid_uv(in vec2 uv){
 	return uv.x >= 0 && uv.y >= 0 && uv.x < texDim.x && uv.y < texDim.y;
 }
@@ -295,6 +296,7 @@ sample get_sample(int index){
 	vec4 lookup2 = texelFetch(velTex, iuv);
 	vec4 lookup3 = texelFetch(posTex, iuv);
 	vec4 lookup4 = texelFetch(albTex, iuv);
+	vec2 lookup5 = texelFetch(roughMetalTex, iuv).xy;
 	s.col = lookup0.rgb;
 	s.nor = lookup1.xyz;
 	s.vel = lookup2.xy;
@@ -306,6 +308,8 @@ sample get_sample(int index){
 	s.id = lookup4.w;
 	s.view = normalize(s.pos);
 	s.ref = reflect(s.view, s.nor);
+	s.rou = lookup5.x;
+	s.met = lookup5.y;
 	return s;
 }
 
@@ -365,8 +369,8 @@ vec3 get_specular_radiance(in sample this_s, in sample test_s){
 	//vec3 	F  	= fresnelSchlickRoughness(HdotV, F0, roughness); //compute fresnel
 	vec3 F = simpleFresnelSchlick(NdotV, F0);
 	//return test_s.col;// * F;
-	float	NDF = DistributionGGX(NdotH, roughness); //compute NDF term
-	float 	G   = GeometrySmith(NdotV, NdotL, roughness); //compute G term   
+	float	NDF = DistributionGGX(NdotH, this_s.rou); //compute NDF term
+	float 	G   = GeometrySmith(NdotV, NdotL, this_s.rou); //compute G term   
 	vec3 	spe = (NDF*G*F)/(4.*NdotV*NdotL);  
 
 	//vec3 	kS = F;					//k specular
@@ -393,7 +397,7 @@ float get_pdf(in sample this_s, in sample test_s){
 	float   HdotL = saturate(dot(H, L)) + 0.001;
 
 	const vec3 F0 = vec3(0.8);
-	float	NDF = DistributionGGX(NdotH, roughness); //compute NDF term
+	float	NDF = DistributionGGX(NdotH, this_s.rou); //compute NDF term
 
 	return NDF * NdotH / (4.0 * HdotL) + 0.001;
 }
@@ -426,8 +430,8 @@ vec3 get_radiance_for_env(in sample this_s, in sample test_s){
 	//vec3 	F  	= fresnelSchlickRoughness(HdotV, F0, roughness); //compute fresnel
 	vec3 F = simpleFresnelSchlick(NdotV, F0);
 	//return test_s.col;// * F;
-	float	NDF = DistributionGGX(NdotH, roughness); //compute NDF term
-	float 	G   = GeometrySmith(NdotV, NdotL, roughness); //compute G term   
+	float	NDF = DistributionGGX(NdotH, this_s.rou); //compute NDF term
+	float 	G   = GeometrySmith(NdotV, NdotL, this_s.rou); //compute G term   
 	vec3 	spe = (NDF*G*F)/(4.*NdotV*NdotL);  
 
 	//vec3 	kS = F;					//k specular
