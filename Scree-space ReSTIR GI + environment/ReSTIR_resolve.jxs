@@ -368,9 +368,9 @@ void main(void) {
 	//occlusion = max(0.0, occlusion);
 	//occlusion *= occlusion;
 	//occlusion = 1;
-	float radius = 4.3*occlusion;//mix(4, 4, this_s.depth);
-	int NUM_SAMPLES = 1;//int( mix(1, 4, occlusion));//int(mix(4, 4, occlusion));//int(mix(4, 4, min(1.0, reservoir.z*0.001)));
-	float weight = 1;
+	float radius = mix(0.3, 70, occlusion*occlusion);//mix(4, 4, this_s.depth);
+	int NUM_SAMPLES = int( mix(1, 5, occlusion));//int(mix(4, 4, occlusion));//int(mix(4, 4, min(1.0, reservoir.z*0.001)));
+	float weight = 0.001;
 	/*
 	ivec2 uv_offset[8] = ivec2[](	ivec2(-1,-1), 
 									ivec2(0, -1), 
@@ -421,14 +421,14 @@ void main(void) {
 			test_s = get_sample_pos_col(int(reservoir.y));
 
 			if(visible(this_s, test_s, seed)){
-				float this_weight = angle_diff * ( 1 - saturate(20000*abs(this_s.depth - sample_depth)*abs(sample_occ - occlusion)) );
+				float this_weight = angle_diff * ( 1 - saturate(100*abs(this_s.depth - sample_depth))) * (1 - abs(sample_occ - occlusion) );
 				vec3 radiance = get_radiance(this_s, test_s);// * max(0.5, dot(test_s.nor, this_s.nor));
-				float p_hat = luminance(radiance);
+				float p_hat = luminance(radiance) * (this_s.depth + 1);
 				if(p_hat <= 0)continue;
 				reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
 				radiance *= reservoir.w;
-				outColor.rgb += radiance;
-				weight += 1;//this_weight;
+				outColor.rgb += radiance*this_weight;
+				weight += this_weight;
 			}		
 
 		} else {
@@ -438,14 +438,14 @@ void main(void) {
 			//bool is_visible = (i % 3) == 0 ? visible_env(this_s, test_s, seed) : true;
 			bool is_visible = visible_env(this_s, test_s, seed);
 			if(is_visible){
-				float this_weight = angle_diff * ( 1 - saturate(20000*abs(this_s.depth - sample_depth)*abs(sample_occ - occlusion)) );
+				float this_weight = angle_diff * ( 1 - saturate(100*abs(this_s.depth - sample_depth))) * (1 - abs(sample_occ - occlusion) );
 				vec3 radiance = get_radiance_for_env(this_s, test_s);// * max(0.5, dot(test_s.nor, this_s.nor));
-				float p_hat = luminance(radiance);
+				float p_hat = luminance(radiance) * (this_s.depth + 1);
 				if(p_hat <= 0)continue;
 				reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
 				radiance *= reservoir.w;
-				outColor.rgb += radiance;
-				weight += 1;//this_weight;
+				outColor.rgb += radiance*this_weight;
+				weight += this_weight;
 			}
 		}
 	}

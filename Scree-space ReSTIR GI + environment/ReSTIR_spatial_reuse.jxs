@@ -358,12 +358,12 @@ void main(void) {
 			if(neighbor_reservoir.y >= 0){
 
 				test_s = get_sample_pos_col(int(neighbor_reservoir.y));
-				p_hat = luminance( get_radiance(this_s, test_s) );
+				p_hat = luminance( get_radiance(this_s, test_s) ) * (this_s.depth + 1);
 
 			} else {
 
 				test_s = get_sample_dir_col_for_env_jittered(int(neighbor_reservoir.y), seed);
-				p_hat = luminance( get_radiance_for_env(this_s, test_s) );
+				p_hat = luminance( get_radiance_for_env(this_s, test_s) ) * (this_s.depth + 1);
 			}
 
 			spatial_reservoir = updateReservoir(spatial_reservoir, neighbor_reservoir.y, p_hat * neighbor_reservoir.w * neighbor_reservoir.z, neighbor_reservoir.z, seed);
@@ -372,11 +372,11 @@ void main(void) {
 
 		if(spatial_reservoir.y >= 0){
 			test_s = get_sample_pos_col(int(spatial_reservoir.y));
-			p_hat = luminance( get_radiance(this_s, test_s) );
+			p_hat = luminance( get_radiance(this_s, test_s) ) * (this_s.depth + 1);
 
 		} else {
 			test_s = get_sample_dir_col_for_env_jittered(int(spatial_reservoir.y), seed);
-			p_hat = luminance( get_radiance_for_env(this_s, test_s) );
+			p_hat = luminance( get_radiance_for_env(this_s, test_s) ) * (this_s.depth + 1);
 		}
 
 		spatial_reservoir.w = p_hat > 0 ? (1 / max(p_hat, 0.0001)) * (spatial_reservoir.x / max(spatial_reservoir.z, 0.0001)) : 0.0;
@@ -395,7 +395,7 @@ void main(void) {
 			reservoir.w = 0.0;
 		} else {
 			vec3 radiance = get_radiance(this_s, test_s);
-			float p_hat = luminance(radiance);
+			float p_hat = luminance(radiance) * (this_s.depth + 1);
 			reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
 		}	
 
@@ -408,7 +408,7 @@ void main(void) {
 			reservoir.w = 0.0;
 		} else {
 			vec3 radiance = get_radiance_for_env(this_s, test_s);
-			float p_hat = luminance(radiance);
+			float p_hat = luminance(radiance) * (this_s.depth + 1);
 			reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
 		}	
 

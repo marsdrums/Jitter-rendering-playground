@@ -166,18 +166,22 @@ void main(void) {
 	vec2 prev_vel = texture(velTex, c.repUV).ba;
 	//vec2 prev_vel = texture(velTex, jit_in.uv).ba;
 	float vel_diff = length( prev_vel - c.vel );
-	float weight = saturate( (vel_diff - 0.001)*10 );
-	hist *= 1 - saturate(weight*10);
+	float weight = saturate( (vel_diff - 0.001)*100 );
+
+	//outTest = vec4(weight);
+	//hist *= 1 - saturate(weight*10);
 	//if(weight > 0.1){
 	//	hist = 0;
 	//} 
 
-	vec3 accumulated_col = mix( p.col, c.col,  max(0.1, 1 / (hist+1)) );//0.1*c.col + 0.9*p.col;
+	//vec3 accumulated_col = mix( p.col, c.col,  max(0.1, 1 / (hist+1)) );//0.1*c.col + 0.9*p.col;
+	vec3 accumulated_col = mix( p.col, c.col, weight );//0.1*c.col + 0.9*p.col;
+
 	//vec3 accumulated_col = 0.1*c.col + 0.9*p.col;
 	//outCol.rgb = mix(accumulated_col, curr_col_blurred, weight);
 	//outCol.rgb = mix(accumulated_col, c.col, min(1.0, weight*200));
 
-	outCol.rgb = p.col;
+	outCol.rgb = accumulated_col;
 	//outCol.rgb = mix(accumulated_col, curr_col_blurred, min(1.0, weight*200));
 	//hist += 1;
 	//hist *= saturate(1 - weight);

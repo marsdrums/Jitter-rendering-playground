@@ -40,7 +40,7 @@
 				gl_Position = MVP*vec4(pos, 1.);
 				float fps = 1/delta;
 				float target_fps = 24;
-				jit_out.vel_amt = fps / target_fps;
+				jit_out.vel_amt = 2;//fps / target_fps;
 				jit_out.texcoord = vec2(textureMatrix0*vec4(texcoord, 0., 1.));
 			}
 		]]>
@@ -69,8 +69,8 @@
 				float this_depth = texelFetch(depthTex, iuv).w;
 
 				//vec2 texel_size = 1 / texDim;
-				float speed = length(vel_rect)*200;
-				const int MAX_SAMPLES = 20;
+				float speed = length(vel_rect);
+				const int MAX_SAMPLES = 30;
    				int nSamples = clamp(int(speed), 1, MAX_SAMPLES);
    				float tot_weight = 0;
 
@@ -79,11 +79,11 @@
       				vec2 uv = jit_in.texcoord + offset;
       				vec2 prev_vel = texture(velTex, uv).ba;
       				float vel_diff = length(vel - prev_vel);
-      				float weight = 1 - min(1.0, clamp( (vel_diff-0.01), 0.0, 1.0 ) * 50);
+      				//float weight = 1 - min(1.0, clamp( (vel_diff-0.01), 0.0, 1.0 ) * 50);
       				float test_depth = texture(depthTex, uv).w;
       				if(test_depth < this_depth) continue;
-      				col += texture(imgTex, uv).rgb * weight;
-      				tot_weight += weight;
+      				col += texture(imgTex, uv).rgb;// * weight;
+      				tot_weight += 1;//weight;
    				}
    				col /= tot_weight + 1;
 
