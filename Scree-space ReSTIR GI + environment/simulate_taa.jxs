@@ -199,7 +199,7 @@ void main(void) {
 	vec3 closest_frag = find_closest_fragment_3x3(jit_in.uv);
 	vec2 vel = texelFetch(velTex, ivec2(closest_frag.xy)).xy;
 
-	vec2 unjitt_uv = jit_in.uv;// - getJitter();
+	vec2 unjitt_uv = jit_in.uv - getJitter();
 	vec4 curr_col = sample_color(colTex, unjitt_uv);
 
 	//float vel_length = length(vel);

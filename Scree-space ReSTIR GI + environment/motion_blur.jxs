@@ -70,7 +70,7 @@
 
 				//vec2 texel_size = 1 / texDim;
 				float speed = length(vel_rect)*200;
-				const int MAX_SAMPLES = 40;
+				const int MAX_SAMPLES = 20;
    				int nSamples = clamp(int(speed), 1, MAX_SAMPLES);
    				float tot_weight = 0;
 

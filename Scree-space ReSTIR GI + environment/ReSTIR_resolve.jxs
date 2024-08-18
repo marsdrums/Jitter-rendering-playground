@@ -368,7 +368,7 @@ void main(void) {
 	//occlusion = max(0.0, occlusion);
 	//occlusion *= occlusion;
 	//occlusion = 1;
-	float radius = 5.3*occlusion;//mix(4, 4, this_s.depth);
+	float radius = 4.3*occlusion;//mix(4, 4, this_s.depth);
 	int NUM_SAMPLES = 1;//int( mix(1, 4, occlusion));//int(mix(4, 4, occlusion));//int(mix(4, 4, min(1.0, reservoir.z*0.001)));
 	float weight = 1;
 	/*

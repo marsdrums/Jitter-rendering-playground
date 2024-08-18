@@ -1,0 +1,7 @@
+<jitterpass>
+	<pass name="trigger_jittering" jitpos="1">
+		<subpass name="dummy" file="through.jxs" inputs="4">
+			<input source="COLOR" />
+		</subpass>
+	</pass>
+</jitterpass>	

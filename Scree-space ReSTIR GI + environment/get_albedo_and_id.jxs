@@ -1,7 +1,7 @@
 <jittershader name="fill-flat-quads">
 	<description>Default Shader </description>
 	<param name="position" type="vec3" state="POSITION" />
-	<param name="modelViewProjectionMatrix" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="modelViewProjectionMatrix" type="mat4" state="JITTERED_MODELVIEW_PROJECTION_MATRIX" />
 	<param name="color" type="vec4" state="COLOR" />
 	<language name="glsl" version="1.5">
 		<bind param="position" program="vp" />
