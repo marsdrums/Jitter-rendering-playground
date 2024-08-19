@@ -355,7 +355,7 @@ vec3 get_specular_radiance(in sample this_s, in sample test_s){
 
 	vec3 F0 = mix(vec3(0.04), this_s.alb, vec3(this_s.met)); 
 
-	vec3 V = normalize(-this_s.pos);
+	vec3 V = -this_s.view;
   //vec3 L = normalize(test_s.pos - this_s.pos);
 	//vec3 H = normalize(V + L);		//half vector
 
@@ -416,7 +416,7 @@ vec3 get_radiance_for_env(in sample this_s, in sample test_s){
 
 	vec3 F0 = mix(vec3(0.04), this_s.alb, vec3(this_s.met));  //use alb as F0 if metallic
 
-	vec3 V = normalize(-this_s.pos);
+	vec3 V = -this_s.view;
   //vec3 L = normalize(test_s.nor);
 	//vec3 H = normalize(V + L);		//half vector
 
