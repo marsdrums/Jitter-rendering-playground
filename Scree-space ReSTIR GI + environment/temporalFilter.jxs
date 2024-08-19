@@ -166,7 +166,7 @@ void main(void) {
 	vec2 prev_vel = texture(velTex, c.repUV).ba;
 	//vec2 prev_vel = texture(velTex, jit_in.uv).ba;
 	float vel_diff = length( prev_vel - c.vel );
-	float weight = saturate( (vel_diff - 0.001)*100 );
+	float weight = saturate( (vel_diff - 0.001)*1000 );
 
 	//outTest = vec4(weight);
 	//hist *= 1 - saturate(weight*10);

@@ -1,8 +1,9 @@
 <jittershader name="mrt.simple.render.jxs">
 	<param name="tex_normals" type="int" default="0" />
 	<param name="depthLayersTex" type="int" default="1" />
-	<param name="tex_rand" type="int" default="2" />
-	<texture file="stbn_unit3_scalar_tiled.png" type="float16" unit="2" rectangle="1" filter="none none" wrap="repeat repeat"/>	
+	<param name="viewPosTex" type="int" default="2" />
+	<param name="tex_rand" type="int" default="3" />
+	<texture file="stbn_unit3_scalar_tiled.png" type="float16" unit="3" rectangle="1" filter="none none" wrap="repeat repeat"/>	
 	<param name="projmat" type="mat4" state="CAM_PROJECTION_MATRIX" />
 	<param name="farDistance" type="float" state="FAR_CLIP" />
 	<param name="farCorner" type="vec3" state="FAR_CORNER" />	
@@ -22,6 +23,7 @@
 		<bind param="farCorner" program="vp" />			
 		<bind param="tex_normals" program="fp" />	
 		<bind param="depthLayersTex" program="fp" />	
+		<bind param="viewPosTex" program="fp" />
 		<bind param="tex_rand" program="fp" />		
 		<bind param="projmat" program="fp" />		
 		<bind param="farDistance" program="fp" />
@@ -64,7 +66,7 @@ in vec3 ray;
 
 layout (location = 0) out vec4 outColor;
 
-uniform sampler2DRect tex_normals, depthLayersTex, tex_rand;
+uniform sampler2DRect tex_normals, depthLayersTex, viewPosTex, tex_rand;
 uniform mat4 projmat;
 uniform float farDistance;
 uniform float intensity;
@@ -82,10 +84,12 @@ vec3 computeZ(vec2 xy)
 void main()
 {
 	
-	vec4 norm_depth = texture(tex_normals, texcoord_rect);
-	float depth = norm_depth.w;
-	vec3 viewPos = normalize(ray) * farDistance * depth;
+	ivec2 iuv = ivec2(texcoord_rect);
+	vec4 norm_depth = texelFetch(tex_normals, iuv);
+
+	vec3 viewPos = texelFetch(viewPosTex, ivec2(gl_FragCoord.xy)).xyz; //normalize(ray) * farDistance * depth;
 	vec3 viewNorm = norm_depth.xyz;
+	float depth = norm_depth.w;
 	//outTest = -vec4(viewPos.z, viewPos.z, viewPos.z, 1);
 //	float a = 1./(1. + viewNorm.z);
 //    float b = -viewNorm.x*viewNorm.y*a;
@@ -100,7 +104,7 @@ void main()
 
 	
 	// accumulated occlusion factor
-	#define NUM_BASE_SAMPLES 8	
+	#define NUM_BASE_SAMPLES 5	
 	float occ = 0;
 	float weight = amnt / NUM_BASE_SAMPLES;
 	for (int i = 0; i < NUM_BASE_SAMPLES; ++i) {
@@ -115,7 +119,7 @@ void main()
 		rand.xyz = normalize(rand.xyz + viewNorm);
 
 		float sample_radius = rand.w * radius;
-		vec3 randPos = viewPos.xyz + rand.xyz * sample_radius;
+		vec3 randPos = viewPos + rand.xyz * sample_radius;
 		vec4 nuv = (projmat * vec4(randPos, 1));
 		nuv.xy /= nuv.w;
 		if(nuv.x <= -1 || nuv.y <= -1 || nuv.x >= 1 || nuv.y >= 1){
