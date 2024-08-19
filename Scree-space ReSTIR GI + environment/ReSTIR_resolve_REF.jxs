@@ -132,8 +132,8 @@ void main(void) {
 
 	outColor = vec4(0,0,0,1);
 
-	float radius = mix(100, 100, this_s.depth)*this_s.rou*this_s.rou + 4;
-	int NUM_SAMPLES = 1;//int(mix(4, 4, this_s.depth));
+	float radius = 30*this_s.rou*this_s.rou + 0.2;
+	int NUM_SAMPLES = int(mix(1, 3, this_s.rou*this_s.rou));
 	float weight = 1;
 
 	//ivec2 uv_offset[8] = ivec2[](	ivec2(-1,-1), 
@@ -180,7 +180,7 @@ void main(void) {
 
 			test_s = get_sample_pos_col(int(reservoir.y));
 
-			if(visible(this_s, test_s, seed)){
+			if(true /*visible(this_s, test_s, seed)*/){
 				float this_weight = angle_diff * ( 1 - saturate(200*abs(this_s.depth - sample_depth)) );
 				vec3 radiance = get_specular_radiance(this_s, test_s) * this_weight;// * max(0.5, dot(test_s.nor, this_s.nor));
 				float p_hat = luminance(radiance);
@@ -198,7 +198,7 @@ void main(void) {
 
 			//bool is_visible = (i % 3) == 0 ? visible_env(this_s, test_s, seed) : true;
 			bool is_visible = visible_env(this_s, test_s, seed);
-			if(is_visible){
+			if(true /*is_visible*/){
 				float this_weight = angle_diff * ( 1 - saturate(200*abs(this_s.depth - sample_depth)) );
 				vec3 radiance = get_radiance_for_env(this_s, test_s) * this_weight;// * max(0.5, dot(test_s.nor, this_s.nor));
 				float p_hat = luminance(radiance);

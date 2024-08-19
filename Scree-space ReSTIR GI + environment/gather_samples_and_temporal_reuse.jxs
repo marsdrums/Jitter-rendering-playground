@@ -191,11 +191,11 @@ vec2 cartesianToUv(vec3 cartesian) {
 vec2 get_sample_uv_for_env(inout uint seed, in vec3 nor){
 
 	vec3 wNor = (invV * vec4(nor, 0)).xyz;
-	//vec3 rand_dir = randomUnitVector3(seed);
-	//rand_dir *= dot(rand_dir, wNor) > 0.0 ? 1 : -1;
-	vec3 rand_dir = normalize(wNor +  randomUnitVector3(seed));
+	vec3 rand_dir = randomUnitVector3(seed);
+	rand_dir *= dot(rand_dir, wNor) > 0.0 ? 1 : -1;
+	//vec3 rand_dir = normalize(wNor +  randomUnitVector3(seed));
 	vec2 uv = vec2(atan(rand_dir.z, rand_dir.x), asin(rand_dir.y));
-    uv *= vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
+    uv *= vec2(-0.1591549431, 0.3183098862);//vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
     uv += 0.5;
     uv *= mapSize;
     return uv;
