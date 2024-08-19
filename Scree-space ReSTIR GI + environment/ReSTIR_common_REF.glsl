@@ -353,25 +353,25 @@ float 	GeometrySmith(float NdotV, float NdotL, float rou){
 
 vec3 get_specular_radiance(in sample this_s, in sample test_s){
 
-	const vec3 F0 = vec3(0.01);
+	vec3 F0 = mix(vec3(0.04), this_s.alb, vec3(this_s.met)); 
 
 	vec3 V = normalize(-this_s.pos);
-  vec3 L = normalize(test_s.pos - this_s.pos);
-	vec3 H = normalize(V + L);		//half vector
+  //vec3 L = normalize(test_s.pos - this_s.pos);
+	//vec3 H = normalize(V + L);		//half vector
 
 	//compute dot products
-	float	HdotV = max(0.0, (dot(H, V)));
+	//float	HdotV = max(0.0, (dot(H, V)));
     float 	NdotV = max(0.001, (dot(this_s.nor, V))); //avoid dividing by 0
-    float 	NdotL = max(0.001, (dot(this_s.nor, L)));
-    float   NdotH = max(0.0, (dot(this_s.nor, H)));
-    float   HdotL = max(0.001, (dot(H, L)));
+  //  float 	NdotL = max(0.001, (dot(this_s.nor, L)));
+  //  float   NdotH = max(0.0, (dot(this_s.nor, H)));
+  //  float   HdotL = max(0.001, (dot(H, L)));
 
 	//vec3 	F  	= fresnelSchlickRoughness(HdotV, F0, roughness); //compute fresnel
 	vec3 F = simpleFresnelSchlick(NdotV, F0);
 	//return test_s.col;// * F;
-	float	NDF = DistributionGGX(NdotH, this_s.rou); //compute NDF term
-	float 	G   = GeometrySmith(NdotV, NdotL, this_s.rou); //compute G term   
-	vec3 	spe = (NDF*G*F)/(4.*NdotV*NdotL);  
+	//float	NDF = DistributionGGX(NdotH, this_s.rou); //compute NDF term
+	//float 	G   = GeometrySmith(NdotV, NdotL, this_s.rou); //compute G term   
+	//vec3 	spe = (NDF*G*F)/(4.*NdotV*NdotL);  
 
 	//vec3 	kS = F;					//k specular
 	//vec3 	kD = vec3(1.0) - kS;	//k diffuse
@@ -414,25 +414,25 @@ vec3 get_radiance(in sample this_s, in sample test_s){
 
 vec3 get_radiance_for_env(in sample this_s, in sample test_s){
 
-	const vec3 F0 = vec3(0.01);
+	vec3 F0 = mix(vec3(0.04), this_s.alb, vec3(this_s.met));  //use alb as F0 if metallic
 
 	vec3 V = normalize(-this_s.pos);
-  vec3 L = normalize(test_s.nor);
-	vec3 H = normalize(V + L);		//half vector
+  //vec3 L = normalize(test_s.nor);
+	//vec3 H = normalize(V + L);		//half vector
 
 	//compute dot products
-	float	HdotV = max(0.0, (dot(H, V)));
+	//float	HdotV = max(0.0, (dot(H, V)));
   float 	NdotV = max(0.001, (dot(this_s.nor, V))); //avoid dividing by 0
-  float 	NdotL = max(0.001, (dot(this_s.nor, L)));
-  float   NdotH = max(0.0, (dot(this_s.nor, H)));
-  float   HdotL = max(0.001, (dot(H, L)));
+  //float 	NdotL = max(0.001, (dot(this_s.nor, L)));
+  //float   NdotH = max(0.0, (dot(this_s.nor, H)));
+  //float   HdotL = max(0.001, (dot(H, L)));
 
 	//vec3 	F  	= fresnelSchlickRoughness(HdotV, F0, roughness); //compute fresnel
 	vec3 F = simpleFresnelSchlick(NdotV, F0);
 	//return test_s.col;// * F;
-	float	NDF = DistributionGGX(NdotH, this_s.rou); //compute NDF term
-	float 	G   = GeometrySmith(NdotV, NdotL, this_s.rou); //compute G term   
-	vec3 	spe = (NDF*G*F)/(4.*NdotV*NdotL);  
+	//float	NDF = DistributionGGX(NdotH, this_s.rou); //compute NDF term
+	//float 	G   = GeometrySmith(NdotV, NdotL, this_s.rou); //compute G term   
+	//vec3 	spe = (NDF*G*F)/(4.*NdotV*NdotL);  
 
 	//vec3 	kS = F;					//k specular
 	//vec3 	kD = vec3(1.0) - kS;	//k diffuse
