@@ -38,7 +38,7 @@ bool get_exit_distance_from_frustum(in vec3 ro, in vec3 rd, in vec4 plane, out f
 vec2 get_sample_uv(in sample this_s, inout uint seed){
 
   	float resolution  = 0.3;
-  	int   steps       = 3;
+  	int   steps       = 5;
 
  	vec4 startView = vec4(this_s.pos, 1);
 
@@ -99,7 +99,7 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
   float useX      = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
   float delta     = mix(abs(deltaY), abs(deltaX), useX) * clamp(resolution, 0.0, 1.0);
   vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.001);
-  frag += increment * RandomFloat01(seed)*0.5;
+  frag += increment * RandomFloat01(seed)*0.01;
 
   float search0 = 0;
   float search1 = 0;
@@ -114,7 +114,7 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
   bool found = false;
 
   for (i = 0; i < int(delta); i+=1) {
-    frag      += increment;
+    
     	if(i >= int(delta)-1){
     		//if the ray didn't hit any geometry, sample from the envionment map
 	
@@ -129,6 +129,7 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
     		return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
     	}
     //uv.xy      = frag / texDim;
+    frag      += increment;
     depths = texelFetch(velTex, ivec2(frag));
 
     search1 = mix( (frag.y - startFrag.y) / deltaY, (frag.x - startFrag.x) / deltaX, useX );
@@ -356,18 +357,18 @@ vec3 get_specular_radiance(in sample this_s, in sample test_s){
 	vec3 F0 = mix(vec3(0.04), this_s.alb, vec3(this_s.met)); 
 
 	vec3 V = -this_s.view;
-  //vec3 L = normalize(test_s.pos - this_s.pos);
-	//vec3 H = normalize(V + L);		//half vector
+  vec3 L = normalize(test_s.pos - this_s.pos);
+	vec3 H = normalize(V + L);		//half vector
 
 	//compute dot products
-	//float	HdotV = max(0.0, (dot(H, V)));
-    float 	NdotV = max(0.001, (dot(this_s.nor, V))); //avoid dividing by 0
+	float	HdotV = max(0.0, (dot(H, V)));
+  //  float 	NdotV = max(0.001, (dot(this_s.nor, V))); //avoid dividing by 0
   //  float 	NdotL = max(0.001, (dot(this_s.nor, L)));
   //  float   NdotH = max(0.0, (dot(this_s.nor, H)));
   //  float   HdotL = max(0.001, (dot(H, L)));
 
-	//vec3 	F  	= fresnelSchlickRoughness(HdotV, F0, roughness); //compute fresnel
-	vec3 F = simpleFresnelSchlick(NdotV, F0);
+	vec3 	F  	= fresnelSchlickRoughness(HdotV, F0, this_s.rou); //compute fresnel
+	//vec3 F = simpleFresnelSchlick(NdotV, F0);
 	//return test_s.col;// * F;
 	//float	NDF = DistributionGGX(NdotH, this_s.rou); //compute NDF term
 	//float 	G   = GeometrySmith(NdotV, NdotL, this_s.rou); //compute G term   
@@ -465,7 +466,7 @@ bool background(in sample this_s){
 }
 
 bool visible(in sample this_s, in sample test_s, inout uint seed){
-	//return true;
+	return true;
 	float num_iterations = 6;
 	float step = 0.1;//1 / num_iterations;
 	float start = 0.0;//step * (1 + RandomFloat01(seed) - 0.5);
@@ -491,7 +492,7 @@ vec2 pos2uv(in vec3 p){
 
 bool visible_env(in sample this_s, in sample test_s, inout uint seed){
 
-	//return true;
+	return true;
 
 	float num_iterations = 25;
 	float step = 0.01;//1 / num_iterations;

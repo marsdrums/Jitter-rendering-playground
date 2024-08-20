@@ -274,7 +274,7 @@ bool visible(in sample this_s, in sample test_s, inout uint seed){
 	for(float i = start; i < 1; i += step){ //make a better tracing
 		vec2 test_uv = mix(this_s.uv, test_s.uv, i);
 		float expected_depth = (this_s.pos.z * test_s.pos.z) / mix(test_s.pos.z, this_s.pos.z, i);
-		vec4 depths = texelFetch(depthsTex, ivec2(test_uv));
+		vec4 depths = texelFetch(depthsTex, ivec2(test_uv*2));
 		if ( 	(depths.r > expected_depth && expected_depth > depths.g ) || 
     			(depths.b > expected_depth && expected_depth > depths.a ) ){
 			return false;
@@ -305,7 +305,7 @@ bool visible_env(in sample this_s, in sample test_s, inout uint seed){
 		vec2 test_uv = mix(this_s.uv, end_uv, vec2(i));
 		if(test_uv.x < 0 || test_uv.y < 0 || test_uv.x >= texDim.x || test_uv.y >= texDim.y) return true;
 		float expected_depth = (this_s.pos.z * end_depth) / mix(end_depth, this_s.pos.z, i);
-		vec4 depths = texelFetch(depthsTex, ivec2(test_uv));
+		vec4 depths = texelFetch(depthsTex, ivec2(test_uv*2));
 		if ( 	(depths.r > expected_depth && expected_depth > depths.g ) || 
     			(depths.b > expected_depth && expected_depth > depths.a ) ){
 			return false;
@@ -368,7 +368,7 @@ void main(void) {
 	//occlusion = max(0.0, occlusion);
 	//occlusion *= occlusion;
 	//occlusion = 1;
-	float radius = mix(0.3, 70, occlusion*occlusion);//mix(4, 4, this_s.depth);
+	float radius = mix(0.3, 50, occlusion);//mix(4, 4, this_s.depth);
 	int NUM_SAMPLES = int( mix(1, 5, occlusion));//int(mix(4, 4, occlusion));//int(mix(4, 4, min(1.0, reservoir.z*0.001)));
 	float weight = 0.001;
 	/*

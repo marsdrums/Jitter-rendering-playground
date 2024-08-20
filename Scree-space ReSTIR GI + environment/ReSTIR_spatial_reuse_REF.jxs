@@ -134,12 +134,12 @@ void main(void) {
 
 		vec4 neighbor_reservoir;
 
-		float a = 1./(1. + this_s.nor.z);
-    	float b = -this_s.nor.x*this_s.nor.y*a;
-    	vec3 f = vec3(1. - this_s.nor.x*this_s.nor.x*a, b, -this_s.nor.x);
-   		vec3 r = vec3(b, 1. - this_s.nor.y*this_s.nor.y*a , -this_s.nor.y);
-
-   		mat3 TBN = mat3(r, f, this_s.nor);
+		//float a = 1./(1. + this_s.nor.z);
+    	//float b = -this_s.nor.x*this_s.nor.y*a;
+    	//vec3 f = vec3(1. - this_s.nor.x*this_s.nor.x*a, b, -this_s.nor.x);
+   		//vec3 r = vec3(b, 1. - this_s.nor.y*this_s.nor.y*a , -this_s.nor.y);
+//
+   		//mat3 TBN = mat3(r, f, this_s.nor);
 
    		ivec2 wrap_uv = ivec2( mod(jit_in.uv, 128) );
    		float index = float(frame)*float(num_samples);
@@ -150,6 +150,10 @@ void main(void) {
 			ivec2 offset_uv = wrap_uv + ivec2( mod(tile_selector, 8.0), floor(tile_selector/8) )*128;
 			vec4 lookup = texelFetch(stbn_uvec2Tex, offset_uv);
 			vec3 disk = vec3((lookup.xy*2 - vec2(1.0))*lookup.w*radius*this_s.rou*this_s.rou, 0);
+
+			//float rand_radius = sqrt(RandomFloat01(seed))/this_s.depth;
+   			//float rand_angle = RandomFloat01(seed)*TWOPI;
+   			//vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*radius*0.03*this_s.depth;
 
 			//vec3 random_in_lobe_dir = this_s.ref + randomUnitVector3(seed)*this_s.rou*this_s.rou;
 			//vec4 random_in_lobe_pos = vec4(this_s.pos + random_in_lobe_dir*this_s.rou*this_s.rou*lookup.w*radius, 1.0);
