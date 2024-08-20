@@ -40,18 +40,6 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
-					"id" : "obj-495",
-					"maxclass" : "jit.pwindow",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "jit_matrix", "" ],
-					"patching_rect" : [ 940.0, 2230.0, 621.0, 485.0 ],
-					"sync" : 1
-				}
-
-			}
-, 			{
-				"box" : 				{
 					"filename" : "clamp_reservoir_weights.jxs",
 					"id" : "obj-487",
 					"maxclass" : "newobj",
@@ -15680,30 +15668,6 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-21", 2 ],
-					"order" : 1,
-					"source" : [ "obj-476", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-281", 1 ],
-					"order" : 4,
-					"source" : [ "obj-476", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-475", 0 ],
-					"order" : 2,
-					"source" : [ "obj-476", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-495", 0 ],
 					"order" : 0,
 					"source" : [ "obj-476", 0 ]
 				}
@@ -15711,8 +15675,24 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-90", 8 ],
+					"destination" : [ "obj-281", 1 ],
 					"order" : 3,
+					"source" : [ "obj-476", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-475", 0 ],
+					"order" : 1,
+					"source" : [ "obj-476", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-90", 8 ],
+					"order" : 2,
 					"source" : [ "obj-476", 0 ]
 				}
 
