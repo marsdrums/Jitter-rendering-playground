@@ -37,8 +37,8 @@ bool get_exit_distance_from_frustum(in vec3 ro, in vec3 rd, in vec4 plane, out f
 
 vec2 get_sample_uv(in sample this_s, inout uint seed){
 
-  	float resolution  = 0.3;
-  	int   steps       = 5;
+  	float resolution  = 0.5;
+  	int   steps       = 4;
 
  	vec4 startView = vec4(this_s.pos, 1);
 
@@ -99,7 +99,7 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
   float useX      = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
   float delta     = mix(abs(deltaY), abs(deltaX), useX) * clamp(resolution, 0.0, 1.0);
   vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.001);
-  frag += increment * RandomFloat01(seed)*0.01;
+  frag += increment + increment * (RandomFloat01(seed)-0.5)*0.5;
 
   float search0 = 0;
   float search1 = 0;
@@ -129,8 +129,8 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
     		return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
     	}
     //uv.xy      = frag / texDim;
-    frag      += increment;
-    depths = texelFetch(velTex, ivec2(frag));
+    
+    depths = texture(velTex, frag);
 
     search1 = mix( (frag.y - startFrag.y) / deltaY, (frag.x - startFrag.x) / deltaX, useX );
     search1 = clamp(search1, 0.0, 1.0);
@@ -138,8 +138,8 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
     viewDistance = (startView.z * endView.z) / mix(endView.z, startView.z, search1);
     //depth        = positionTo.r - viewDistance;
 
-    if ( 	(depths.r > viewDistance && viewDistance > depths.g ) || 
-    			(depths.b > viewDistance && viewDistance > depths.a ) ){
+    if ( 	(depths.r >= viewDistance && viewDistance >= depths.g ) || 
+    			(depths.b >= viewDistance && viewDistance >= depths.a ) ){
     //if(depth > 0 && depth < thickness){
       hit0 = 1;
       found = true;
@@ -147,6 +147,7 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
     } else {
       search0 = search1;
     }
+    frag      += increment;
   }
 
   search1 = search0 + ((search1 - search0) / 2.0);// + (RandomFloat01(seed) - 0.5)*0.5;
