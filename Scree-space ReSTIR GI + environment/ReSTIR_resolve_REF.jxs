@@ -132,8 +132,38 @@ void main(void) {
 
 	outColor = vec4(0,0,0,1);
 
-	float radius = 1*this_s.rou*this_s.rou + 0.2;
-	int NUM_SAMPLES = int(mix(1, 5, this_s.rou*this_s.rou));
+	if(reservoir.y >= 0){ //if the sample is from the viewport
+
+		test_s = get_sample_pos_col(int(reservoir.y));
+
+		if(true /*visible(this_s, test_s, seed)*/){
+			vec3 radiance = get_specular_radiance(this_s, test_s);// * max(0.5, dot(test_s.nor, this_s.nor));
+			float p_hat = luminance(radiance);
+			p_hat /= get_pdf(this_s, test_s);
+			reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
+			radiance *= reservoir.w;
+			outColor.rgb += radiance;
+		}		
+
+	} else {
+
+		test_s = get_sample_dir_col_for_env_jittered(int(reservoir.y), seed);
+
+		//bool is_visible = (i % 3) == 0 ? visible_env(this_s, test_s, seed) : true;
+		if(true /*is_visible*/){
+			vec3 radiance = get_radiance_for_env(this_s, test_s);// * max(0.5, dot(test_s.nor, this_s.nor));
+			float p_hat = luminance(radiance);
+			//if(p_hat <= 0)continue;
+			reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
+			radiance *= reservoir.w;
+			outColor.rgb += radiance;
+		}
+	}
+
+
+
+	float radius = 70*this_s.rou*this_s.rou + 0.2;
+	int NUM_SAMPLES = int(mix(1, 4, this_s.rou*this_s.rou));
 	float weight = 1;
 
 	//ivec2 uv_offset[8] = ivec2[](	ivec2(-1,-1), 
@@ -197,8 +227,8 @@ void main(void) {
 			test_s = get_sample_dir_col_for_env_jittered(int(reservoir.y), seed);
 
 			//bool is_visible = (i % 3) == 0 ? visible_env(this_s, test_s, seed) : true;
-			bool is_visible = visible_env(this_s, test_s, seed);
-			if(true /*is_visible*/){
+			bool is_visible = true;//visible_env(this_s, test_s, seed);
+			if(is_visible){
 				float this_weight = angle_diff * ( 1 - saturate(200*abs(this_s.depth - sample_depth)) );
 				vec3 radiance = get_radiance_for_env(this_s, test_s) * this_weight;// * max(0.5, dot(test_s.nor, this_s.nor));
 				float p_hat = luminance(radiance);
