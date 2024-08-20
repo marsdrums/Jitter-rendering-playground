@@ -382,6 +382,7 @@ void main(void) {
 									ivec2(1,1));
 	*/
 
+	//vec2 signs = mod(floor(jit_in.uv) + float(frame), vec2(2))*2 - 1;
 
 	for(int i = NUM_SAMPLES; i >= 0; i--){
 		bool valid_uv = false;
@@ -391,6 +392,7 @@ void main(void) {
 			float rand_radius = sqrt(RandomFloat01(seed));///this_s.depth;
    			float rand_angle = RandomFloat01(seed)*TWOPI;//
    			vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*0.01*radius*occlusion;
+   			//disk.xy = abs(disk.xy) * signs; //apply bayer sampling
    			disk = TBN * disk;
    			disk += this_s.pos;
    			vec4 proj_disk = projmat * vec4(disk, 1);

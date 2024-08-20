@@ -1,0 +1,54 @@
+<jittershader name="default">
+	<description>Default Slab </description>
+	<param name="velTex" type="int" default="0" />
+	<param name="norDepthTex" type="int" default="1" />
+	<param name="hitPosTex" type="int" default="2" />
+	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
+	<param name="uv" type="vec2" state="TEXCOORD" />
+	<param name="texDim" type="vec2" state="TEXDIM0" />
+	<language name="glsl" version="1.5">
+		<bind param="velTex" program="fp" />
+		<bind param="norDepthTex" program="fp" />
+		<bind param="hitPosTex" program="fp" />
+		<bind param="textureMatrix0" program="vp" />
+		<bind param="uv" program="vp" />
+		<bind param="texDim" program="fp" />
+		<program name="vp" type="vertex"  >
+		<![CDATA[
+#version 330 core
+
+in vec2 uv;
+
+out jit_PerVertex {
+	vec2 uv;
+} jit_out;
+
+uniform mat4 textureMatrix0;
+
+void main(void) {
+	gl_Position = vec4(uv*2 - 1, 0, 1);//modelViewProjectionMatrix*vec4(position, 1.);
+	jit_out.uv = vec2(textureMatrix0*vec4(uv, 0., 1.));
+}
+]]>
+</program>
+
+<program name="fp" type="fragment"  >
+<![CDATA[
+#version 330 core
+
+in jit_PerVertex {
+	vec2 uv;
+} jit_in;
+
+layout (location = 0) out vec4 outColor;
+
+uniform samplerJit0 velTex, norDepthTex, hitPosTex;
+uniform vec2 texDim;
+
+void main(void) {
+	outColor = texture(velTex, jit_in.texcoord);
+}
+]]>
+</program>
+</language>
+</jittershader>
