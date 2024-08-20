@@ -469,8 +469,8 @@ vec4 gather_samples(in sample this_s, inout uint seed, out float p_hat){
 	ivec2 reprojected_uv = ivec2(this_s.uv - this_s.vel*texDim );
 	//reprojected_uv = ivec2(this_s.uv);
 
-	int M = 4; //num of from the view port
-	int J = 4; //num of samples from the environment map
+	int M = 1;//frame % 2 == 0 ? 4 : 1; //num of from the view port
+	int J = 1;//frame % 2 == 0 ? 4 : 1; //num of samples from the environment map
 
 	//if(valid_reprojection(this_s, vec2(reprojected_uv))){
 	//	M = 20;

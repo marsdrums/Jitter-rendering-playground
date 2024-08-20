@@ -309,7 +309,7 @@ sample get_sample(int index){
 	s.id = lookup4.w;
 	s.view = normalize(s.pos);
 	s.ref = reflect(s.view, s.nor);
-	s.rou = lookup5.x;
+	s.rou = lookup5.x;//clamp(lookup5.x, 0.0, 0.3);
 	s.met = lookup5.y;
 	return s;
 }

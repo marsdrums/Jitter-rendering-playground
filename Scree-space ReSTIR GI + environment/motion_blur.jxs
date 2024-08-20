@@ -10,7 +10,6 @@
 	<param name="pos" type="vec3" state="POSITION" />
 	<param name="texcoord" type="vec2" state="TEXCOORD" />
 	<param name="texDim" type="vec2" state="TEXDIM0" />
-	<param name="width" type="float" default="1" />
 	<param name="delta" type="float" state="DELTA_TIME" />
 	<param name="frame" type="int" state="FRAME" />
 	<param name="farClip" type="float" state="FAR_CLIP" />
@@ -24,7 +23,6 @@
 		<bind param="pos" program="vp" />
 		<bind param="texcoord" program="vp" />
 		<bind param="texDim" program="fp" />
-		<bind param="width" program="fp" />
 		<bind param="delta" program="vp" />
 		<bind param="frame" program="fp" />
 		<bind param="farClip" program="fp" />
@@ -46,7 +44,7 @@
 			void main(void) {
 				gl_Position = MVP*vec4(pos, 1.);
 				float fps = 1/delta;
-				float target_fps = 30;
+				float target_fps = 40;
 				jit_out.vel_amt = fps / target_fps;
 				jit_out.texcoord = vec2(textureMatrix0*vec4(texcoord, 0., 1.));
 			}
@@ -65,7 +63,7 @@
 			
 			uniform sampler2DRect imgTex, velTex, depthTex, STBN_tiledTex;
 			uniform vec2 texDim;
-			uniform float width, farClip;
+			uniform float farClip;
 			uniform int frame;
 
 			void main(void) {
