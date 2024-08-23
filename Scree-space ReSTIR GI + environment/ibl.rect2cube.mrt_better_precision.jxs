@@ -1,0 +1,97 @@
+<jittershader name="ibl.rect2cube.jxs">
+	<description>Convert equirectangular panorama to cubemap faces</description>
+	<param name="rect" type="int" default="0" />
+	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
+	<param name="pos" type="vec3" state="POSITION" />
+	<param name="uv" type="vec2" state="TEXCOORD" />
+	<param name="gamma_correct" type="float" default="0." />
+	<param name="texMat" type="mat4" state="TEXTURE0_MATRIX" />
+	<language name="glsl" version="1.5">
+		<bind param="rect" program="fp" />
+		<bind param="MVP" program="vp" />
+		<bind param="pos" program="vp" />
+		<bind param="uv" program="vp" />
+		<bind param="gamma_correct" program="fp" />
+		<bind param="texMat" program="fp" />
+		<program name="vp" type="vertex"  >
+			<![CDATA[
+#version 330 core
+
+in vec3 pos;
+in vec2 uv;
+out jit_PerVertex {
+	vec2 uv;
+} jit_out;
+uniform mat4 MVP;
+
+void main(void) {
+	gl_Position = MVP*vec4(pos, 1.);
+	jit_out.uv = vec2(uv.x, 1. - uv.y);
+}
+			]]>
+		</program>
+		<program name="fp" type="fragment"  >
+			<![CDATA[
+#version 330 core
+#define PI 3.141592653589793238462643383279502884197
+	
+in jit_PerVertex {
+	vec2 uv;
+} jit_in;
+layout (location = 0) out vec4 outColor[6];
+
+uniform sampler2DRect rect;
+uniform float gamma_correct;
+uniform mat4 texMat;
+
+vec2 dir2uv(vec3 v)
+{
+    vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
+    uv *= vec2(-1/(2*PI), 1/PI); //to invert atan
+    uv += 0.5;
+    return uv;
+}
+
+vec4 getRect(vec2 uv){
+	uv = vec2(texMat * vec4(uv,0,1));
+	vec3 col = texture(rect, uv).rgb;
+	if(gamma_correct == 1.){
+		col /= col + vec3(1.);
+		return vec4(pow(col, vec3(1./2.2)), 1.);
+	} 
+		return vec4(col, 1.);
+}
+void main(void) {
+	vec3 dir;
+	vec2 uv; 
+	vec2 snormUV = jit_in.uv*2. - 1.;
+
+	dir = normalize(vec3(-1., snormUV.yx));//left
+	uv = dir2uv(dir);
+	outColor[1] = getRect(uv);
+
+	dir = normalize(vec3(snormUV, 1.));//front
+	uv = dir2uv(dir);
+	outColor[4] = getRect(uv);
+
+	dir = normalize(vec3(1., snormUV.yx*vec2(1., -1.)));//right
+	uv = dir2uv(dir);
+	outColor[0] = getRect(uv);
+	
+	dir = normalize(vec3(vec2(snormUV.x*-1., snormUV.y), -1.));//back
+	uv = dir2uv(dir);
+	outColor[5] = getRect(uv);
+
+	dir = normalize(vec3(snormUV.x, 1., snormUV.y*-1));//down
+	uv = dir2uv(dir);
+	outColor[3] = getRect(uv);
+
+	dir = normalize(vec3(snormUV.x, -1., snormUV.y));//up
+	uv = dir2uv(dir);
+	outColor[2] = getRect(uv);
+
+}
+			]]>
+		</program>
+	</language>
+</jittershader>

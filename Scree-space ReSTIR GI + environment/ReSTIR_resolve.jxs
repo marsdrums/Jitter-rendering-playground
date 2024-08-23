@@ -2,13 +2,14 @@
 	<description>Default Slab </description>
 	<param name="dummyTex" type="int" default="0" />
 	<param name="reservoirTex" type="int" default="1" filter="nearest" />
-	<param name="colTex" type="int" default="2" filter="nearest" />
-	<param name="norDepthTex" type="int" default="3" filter="nearest" />
-	<param name="depthsTex" type="int" default="4" filter="nearest" />
-	<param name="posTex" type="int" default="5" filter="nearest" />
-	<param name="albTex" type="int" default="6" filter="nearest" />	
-	<param name="environmentMap" type="int" default="7" />
-	<param name="occTex" type="int" default="8" />
+	<param name="bestDirTex" type="int" default="2" filter="nearest" />
+	<param name="colTex" type="int" default="3" filter="nearest" />
+	<param name="norDepthTex" type="int" default="4" filter="nearest" />
+	<param name="depthsTex" type="int" default="5" filter="nearest" />
+	<param name="posTex" type="int" default="6" filter="nearest" />
+	<param name="albTex" type="int" default="7" filter="nearest" />	
+	<param name="environmentMap" type="int" default="8" />
+	<param name="occTex" type="int" default="9" />
 	//<param name="velTex" type="int" default="9" />
 	<param name="texDim" type="vec2" state="TEXDIM1" />
 	<param name="mapSize" type="vec2" state="TEXDIM7" />
@@ -31,6 +32,7 @@
 	<language name="glsl" version="1.5">
 		<bind param="dummyTex" program="fp" />
 		<bind param="reservoirTex" program="fp" />
+		<bind param="bestDirTex" program="fp" />
 		<bind param="colTex" program="fp" />
 		<bind param="norDepthTex" program="fp" />
 		<bind param="depthsTex" program="fp" />
@@ -101,7 +103,8 @@ in jit_PerVertex {
 
 layout (location = 0) out vec4 outColor;
 
-uniform sampler2DRect dummyTex, reservoirTex, colTex, norDepthTex, depthsTex, posTex, albTex, environmentMap, occTex;
+uniform sampler2DRect dummyTex, reservoirTex, bestDirTex, colTex, norDepthTex, depthsTex, posTex, albTex, occTex;
+uniform samplerCube environmentMap;
 uniform int frame;
 uniform vec2 texDim, mapSize;
 uniform mat4 prevMVP, invV, MV, MVP, VP, V, projmat, textureMatrix1;
@@ -222,7 +225,7 @@ sample get_sample_pos_col(int index){
 	s.pos = lookup3.xyz;
 	return s;
 }
-
+/*
 sample get_sample_dir_col_for_env_jittered(int index, inout uint seed){
 
 	sample s;
@@ -232,6 +235,14 @@ sample get_sample_dir_col_for_env_jittered(int index, inout uint seed){
 	s.col = texture(environmentMap, jitter_uv).rgb;
 	s.nor = uv2dir(jitter_uv);
 	s.pos = s.nor; //use the position variable to pass the direction for reprojection
+	return s;
+}
+*/
+sample get_environment_sample(in vec3 candidate_dir, inout uint seed){
+	sample s;
+	s.col = texture(environmentMap, candidate_dir).rgb;
+	s.nor = candidate_dir;
+	s.pos = s.nor;
 	return s;
 }
 
@@ -387,6 +398,7 @@ void main(void) {
 	for(int i = NUM_SAMPLES; i >= 0; i--){
 		bool valid_uv = false;
 		ivec2 randUV;
+		ivec2 randUVfull;
 		for(int i = 0; i < 1; i++){ //search for valid uvs (not outside the viewport);
 
 			float rand_radius = sqrt(RandomFloat01(seed));///this_s.depth;
@@ -399,10 +411,12 @@ void main(void) {
    			proj_disk.xy /= proj_disk.w;
    			vec2 proj_disk_uv = vec2(textureMatrix1 * vec4((proj_disk.xy*0.5 +0.5), 1,1));
 			randUV = ivec2(proj_disk_uv);//get_random_uv(seed, radius);
+			randUVfull = ivec2(proj_disk_uv*2);
+
 			//randUV = get_random_uv(seed, radius);
 			//randUV = ivec2(jit_in.uv) + uv_offset[i] + ivec2(RandomFloat01(seed) - 0.5, RandomFloat01(seed) - 0.5)*2;
 
-			bool background = texelFetch(norDepthTex, randUV*2).w == 1;
+			bool background = texelFetch(norDepthTex, randUVfull).w == 1;
 			if(randUV.x >= 0 && randUV.y >= 0 && randUV.x < texDim.x && randUV.y < texDim.y && !background){
 				valid_uv = true;
 				break;
@@ -412,10 +426,10 @@ void main(void) {
 		if(!valid_uv) continue;
 		
 		vec4 reservoir = texelFetch(reservoirTex, randUV);
-		float angle_diff = max(0.0, dot(this_s.nor, texelFetch(norDepthTex, randUV*2).xyz));
+		float angle_diff = max(0.0, dot(this_s.nor, texelFetch(norDepthTex, randUVfull).xyz));
 		//angle_diff *= angle_diff;
-		float sample_depth = texelFetch(norDepthTex, randUV*2).w;
-		float sample_occ = texelFetch(occTex, randUV*2).r;
+		float sample_depth = texelFetch(norDepthTex, randUVfull).w;
+		float sample_occ = texelFetch(occTex, randUVfull).r;
 		//if(angle_diff <= 0) continue;
 
 		if(reservoir.y >= 0){ //if the sample is from the viewport
@@ -435,7 +449,9 @@ void main(void) {
 
 		} else {
 
-			test_s = get_sample_dir_col_for_env_jittered(int(reservoir.y), seed);
+			//*** read best dir
+			vec3 best_dir = texelFetch(bestDirTex, randUV).xyz;
+			test_s = get_environment_sample(best_dir, seed);
 
 			//bool is_visible = (i % 3) == 0 ? visible_env(this_s, test_s, seed) : true;
 			bool is_visible = visible_env(this_s, test_s, seed);

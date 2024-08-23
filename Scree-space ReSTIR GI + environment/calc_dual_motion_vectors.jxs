@@ -26,6 +26,7 @@ out jit_PerVertex {
 uniform mat4 textureMatrix0;
 
 void main(void) {
+	
 	gl_Position = vec4(uv*2 - 1, 0, 1);//modelViewProjectionMatrix*vec4(position, 1.);
 	jit_out.uv = vec2(textureMatrix0*vec4(uv, 0., 1.));
 }
