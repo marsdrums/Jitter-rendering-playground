@@ -241,27 +241,6 @@ float luminance(vec3 x){
 	return dot(x, vec3(0.299, 0.587, 0.114));
 }
 
-vec3 uv2dir(in vec2 uv){
-
-	uv /= mapSize;
-
-    // Convert the normalized UV coordinates to the range [-1, 1]
-    float u = uv.x * 2.0 - 1.0;
-    float v = uv.y * 2.0 - 1.0;
-
-    // Calculate the longitude and latitude angles
-    float longitude = u * M_PI;          // Longitude (-π to π)
-    float latitude = v * M_PI * 0.5;     // Latitude (-π/2 to π/2)
-
-    // Convert spherical coordinates to Cartesian coordinates
-    float x = cos(latitude) * sin(longitude);
-    float y = sin(latitude);
-    float z = cos(latitude) * cos(longitude);
-
-    vec3 dir = vec3(x, y, z);
-    return (V * vec4(dir, 0)).xyz;
-}
-
 sample get_sample_pos_col(int index){
 
 	sample s;
@@ -274,19 +253,7 @@ sample get_sample_pos_col(int index){
 	s.pos = lookup3.xyz;
 	return s;
 }
-/*
-sample get_sample_dir_col_for_env_jittered(int index, inout uint seed){
 
-	sample s;
-	s.uv = index2uv_for_env(index);
-	ivec2 iuv = ivec2(s.uv);
-	vec2 jitter_uv = s.uv;// + 2*vec2(RandomFloat01(seed)-0.5, RandomFloat01(seed)-0.5);
-	s.col = texture(environmentMap, jitter_uv).rgb;
-	s.nor = uv2dir(jitter_uv);
-	s.pos = s.nor; //use the position variable to pass the direction for reprojection
-	return s;
-}
-*/
 sample get_environment_sample(in vec3 candidate_dir, inout uint seed){
 	sample s;
 	s.col = texture(environmentMap, candidate_dir).rgb;

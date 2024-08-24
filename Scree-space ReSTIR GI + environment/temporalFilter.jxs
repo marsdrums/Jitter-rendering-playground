@@ -58,6 +58,7 @@ struct curr{
 	vec3 col;
 	vec2 vel;
 	vec2 repUV;
+	float weight;
 };
 
 struct prev{
@@ -70,7 +71,9 @@ layout (location = 0) out vec4 outCol;
 curr read_current_textures(){
 	curr c;
 	c.col = texelFetch(imgTex, ivec2(jit_in.uv)).rgb;
-	c.vel = texelFetch(velTex, ivec2(jit_in.uv)).rg;
+	vec3 lookup = texelFetch(velTex, ivec2(jit_in.uv)).rgb;
+	c.vel = lookup.xy;
+	c.weight = lookup.z;
 	c.repUV = jit_in.uv - c.vel*texDim;
 	return c;
 }
@@ -163,10 +166,6 @@ void main(void) {
 	// Clamp previous color to min/max bounding box
 	//p.col = clamp(p.col, minColor, maxColor);	 
 
-	vec2 prev_vel = texture(velTex, c.repUV).ba;
-	//vec2 prev_vel = texture(velTex, jit_in.uv).ba;
-	float vel_diff = length( prev_vel - c.vel );
-	float weight = saturate( (vel_diff - 0.001)*1000 );
 
 	//outTest = vec4(weight);
 	//hist *= 1 - saturate(weight*10);
@@ -175,7 +174,7 @@ void main(void) {
 	//} 
 
 	//vec3 accumulated_col = mix( p.col, c.col,  max(0.1, 1 / (hist+1)) );//0.1*c.col + 0.9*p.col;
-	vec3 accumulated_col = mix( p.col, c.col, weight );//0.1*c.col + 0.9*p.col;
+	vec3 accumulated_col = mix( p.col, c.col, c.weight );//0.1*c.col + 0.9*p.col;
 
 	//vec3 accumulated_col = 0.1*c.col + 0.9*p.col;
 	//outCol.rgb = mix(accumulated_col, curr_col_blurred, weight);

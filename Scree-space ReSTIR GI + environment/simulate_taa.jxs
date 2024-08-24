@@ -197,7 +197,9 @@ vec3 find_closest_fragment_3x3(vec2 uv)
 void main(void) {
 
 	vec3 closest_frag = find_closest_fragment_3x3(jit_in.uv);
-	vec2 vel = texelFetch(velTex, ivec2(closest_frag.xy)).xy;
+	vec3 lookup = texelFetch(velTex, ivec2(closest_frag.xy)).xyz;
+	vec2 vel = lookup.xy;
+	float weight = lookup.z;
 
 	vec2 unjitt_uv = jit_in.uv - getJitter();
 	vec4 curr_col = sample_color(colTex, unjitt_uv);
@@ -260,10 +262,6 @@ void main(void) {
 	float unbiased_weight_sqr = unbiased_weight * unbiased_weight;
 	float k_feedback = mix(0.9, 1, unbiased_weight_sqr);
 
-	vec2 prev_vel = texture(velTex, prevUV).ba;
-	//vec2 prev_vel = texture(velTex, jit_in.uv).ba;
-	float vel_diff = length( prev_vel - vel );
-	float weight = saturate( (vel_diff - 0.001)*100 );
 	k_feedback *= 1 - weight;
 
 	// output

@@ -1,15 +1,14 @@
 <jittershader name="default">
 	<description>Default Slab </description>
-	<param name="dummyTex" type="int" default="0" />
+	<param name="colTex" type="int" default="0" filter="nearest" />
 	<param name="reservoirTex" type="int" default="1" filter="nearest" />
 	<param name="bestDirTex" type="int" default="2" filter="nearest" />
-	<param name="colTex" type="int" default="3" filter="nearest" />
-	<param name="norDepthTex" type="int" default="4" filter="nearest" />
-	<param name="depthsTex" type="int" default="5" filter="nearest" />
-	<param name="posTex" type="int" default="6" filter="nearest" />
-	<param name="albTex" type="int" default="7" filter="nearest" />	
-	<param name="environmentMap" type="int" default="8" />
-	<param name="occTex" type="int" default="9" />
+	<param name="norDepthTex" type="int" default="3" filter="nearest" />
+	<param name="depthsTex" type="int" default="4" filter="nearest" />
+	<param name="posTex" type="int" default="5" filter="nearest" />
+	<param name="albTex" type="int" default="6" filter="nearest" />	
+	<param name="environmentMap" type="int" default="7" />
+	<param name="occTex" type="int" default="8" />
 	//<param name="velTex" type="int" default="9" />
 	<param name="texDim" type="vec2" state="TEXDIM1" />
 	<param name="mapSize" type="vec2" state="TEXDIM7" />
@@ -30,10 +29,9 @@
 	<param name="farCorner" type="vec3" state="FAR_CORNER" />
 	<param name="eye" type="vec3" state="CAMERA_POSITION" />
 	<language name="glsl" version="1.5">
-		<bind param="dummyTex" program="fp" />
+		<bind param="colTex" program="fp" />
 		<bind param="reservoirTex" program="fp" />
 		<bind param="bestDirTex" program="fp" />
-		<bind param="colTex" program="fp" />
 		<bind param="norDepthTex" program="fp" />
 		<bind param="depthsTex" program="fp" />
 		<bind param="texDim" program="fp" />
@@ -103,7 +101,7 @@ in jit_PerVertex {
 
 layout (location = 0) out vec4 outColor;
 
-uniform sampler2DRect dummyTex, reservoirTex, bestDirTex, colTex, norDepthTex, depthsTex, posTex, albTex, occTex;
+uniform sampler2DRect colTex, reservoirTex, bestDirTex, norDepthTex, depthsTex, posTex, albTex, occTex;
 uniform samplerCube environmentMap;
 uniform int frame;
 uniform vec2 texDim, mapSize;
@@ -193,19 +191,19 @@ sample get_sample(int index){
 
 	sample s;
 	vec2 uv = index2uv(index);
-	ivec2 iuv = ivec2(uv);
+	//ivec2 iuv = ivec2(uv);
 	ivec2 iuvFull = ivec2(uv*2);
-	vec4 lookup0 = texelFetch(colTex, iuvFull);
+	//vec4 lookup0 = texelFetch(colTex, iuvFull);
 	vec4 lookup1 = texelFetch(norDepthTex, iuvFull);
 	//vec4 lookup2 = texelFetch(velTex, iuvFull);
 	vec4 lookup3 = texelFetch(posTex, iuvFull);
 	//vec4 lookup4 = texelFetch(albTex, iuvFull);
-	s.col = lookup0.rgb;
+	//s.col = lookup0.rgb;
 	s.nor = lookup1.xyz;
 	//s.vel = lookup2.xy;
 	s.pos = lookup3.xyz;
 	s.depth = lookup1.w;
-	s.index = index;
+	//s.index = index;
 	s.uv = uv;
 	//s.alb = lookup4.rgb;
 	//s.id = lookup4.w;
@@ -469,6 +467,7 @@ void main(void) {
 	}
 
 	outColor.rgb /= weight;
+	outColor.rgb *= occlusion * 30;
 
 }
 ]]>

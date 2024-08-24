@@ -7,7 +7,7 @@
 	<param name="projmat" type="mat4" state="CAM_PROJECTION_MATRIX" />
 	<param name="intensity" type="float" default="1.0" />
 	<param name="amnt" type="float" default="1.0" />
-	<param name="radius" type="float" default="4." />
+	<param name="radius" type="float" default="1." />
 	<param name="MVP" type="mat4" state="MODELVIEW_PROJECTION_MATRIX" />
 	<param name="textureMatrix0" type="mat4" state="TEXTURE0_MATRIX" />
 	<param name="position" type="vec3" state="POSITION" />
@@ -90,7 +90,7 @@ void main()
 
 	
 	// accumulated occlusion factor
-	#define NUM_BASE_SAMPLES 8	
+	#define NUM_BASE_SAMPLES 3	
 	float occ = 0;
 	float weight = amnt / NUM_BASE_SAMPLES;
 	for (int i = 0; i < NUM_BASE_SAMPLES; ++i) {

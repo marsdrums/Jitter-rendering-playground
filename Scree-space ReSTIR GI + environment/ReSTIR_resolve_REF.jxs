@@ -1,15 +1,13 @@
 <jittershader name="default">
 	<description>Default Slab </description>
-	<param name="dummyTex" type="int" default="0" />
+	<param name="colTex" type="int" default="0" filter="nearest" />
 	<param name="reservoirTex" type="int" default="1" filter="nearest" />
 	<param name="bestDirTex" type="int" default="2" filter="nearest" />
-	<param name="colTex" type="int" default="3" filter="nearest" />
-	<param name="norDepthTex" type="int" default="4" filter="nearest" />
-	<param name="velTex" type="int" default="5" filter="nearest" />
-	<param name="posTex" type="int" default="6" filter="nearest" />
-	<param name="albTex" type="int" default="7" filter="nearest" />	
-	<param name="environmentMap" type="int" default="8" filter="nearest"/>
-	<param name="roughMetalTex" type="int" default="9" filter="nearest" />
+	<param name="norDepthTex" type="int" default="3" filter="nearest" />
+	<param name="posTex" type="int" default="4" filter="nearest" />
+	<param name="albTex" type="int" default="5" filter="nearest" />	
+	<param name="environmentMap" type="int" default="6" filter="nearest"/>
+	<param name="roughMetalTex" type="int" default="7" filter="nearest" />
 	<param name="texDim" type="vec2" state="TEXDIM1" />
 	<param name="mapSize" type="vec2" state="TEXDIM7" />
 	<param name="prevMVP" type="mat4" state="PREV_MODELVIEW_PROJECTION_MATRIX" />
@@ -28,12 +26,10 @@
 	<param name="farCorner" type="vec3" state="FAR_CORNER" />
 	<param name="eye" type="vec3" state="CAMERA_POSITION" />
 	<language name="glsl" version="1.5">
-		<bind param="dummyTex" program="fp" />
 		<bind param="reservoirTex" program="fp" />
 		<bind param="bestDirTex" program="fp" />
 		<bind param="colTex" program="fp" />
 		<bind param="norDepthTex" program="fp" />
-		<bind param="velTex" program="fp" />
 		<bind param="texDim" program="fp" />
 		<bind param="mapSize" program="fp" />
 		<bind param="posTex" program="fp" />
@@ -115,13 +111,13 @@ sample get_sample_full_res(int index){
 	ivec2 iuv = ivec2(uv);
 	vec4 lookup0 = texelFetch(colTex, iuv*2);
 	vec4 lookup1 = texelFetch(norDepthTex, iuv*2);
-	vec4 lookup2 = texelFetch(velTex, iuv*2);
+	//vec4 lookup2 = texelFetch(velTex, iuv*2);
 	vec4 lookup3 = texelFetch(posTex, iuv*2);
 	vec4 lookup4 = texelFetch(albTex, iuv*2);
 	vec2 lookup5 = texelFetch(roughMetalTex, iuv).xy;
 	s.col = lookup0.rgb;
 	s.nor = lookup1.xyz;
-	s.vel = lookup2.xy;
+	//s.vel = lookup2.xy;
 	s.pos = lookup3.xyz;
 	s.depth = lookup1.w;
 	s.index = index;
