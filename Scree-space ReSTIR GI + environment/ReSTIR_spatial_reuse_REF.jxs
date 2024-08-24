@@ -108,6 +108,33 @@ uint get_rng_seed(){
 	return uint(jit_in.uv.x*371783) + uint(jit_in.uv.y*288472) + uint(frame*377112 + num_samples);
 }
 
+sample get_sample(int index){
+
+	sample s;
+	vec2 uv = index2uv(index);
+	ivec2 iuv = ivec2(uv);
+	vec4 lookup0 = texelFetch(colTex, iuv);
+	vec4 lookup1 = texelFetch(norDepthTex, iuv);
+	//vec4 lookup2 = texelFetch(velTex, iuv);
+	vec4 lookup3 = texelFetch(posTex, iuv);
+	vec4 lookup4 = texelFetch(albTex, iuv);
+	vec2 lookup5 = texelFetch(roughMetalTex, iuv).xy;
+	s.col = lookup0.rgb;
+	s.nor = lookup1.xyz;
+	//s.vel = lookup2.xy;
+	s.pos = lookup3.xyz;
+	s.depth = lookup1.w;
+	s.index = index;
+	s.uv = uv;
+	s.alb = lookup4.rgb;
+	s.id = lookup4.w;
+	s.view = normalize(s.pos);
+	s.ref = reflect(s.view, s.nor);
+	s.rou = lookup5.x;//clamp(lookup5.x, 0.0, 0.3);
+	s.met = lookup5.y;
+	return s;
+}
+
 void main(void) {
 
 	uint seed = get_rng_seed();

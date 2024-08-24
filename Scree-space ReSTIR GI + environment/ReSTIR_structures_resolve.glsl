@@ -27,7 +27,7 @@ struct sample{
 	float depth;
 	float index;
 	vec2 uv;
-	vec2 vel;
+//	vec2 vel;
 	vec3 alb;
 	float id;
 	vec3 ref;

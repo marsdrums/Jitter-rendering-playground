@@ -176,7 +176,7 @@ void main(void) {
 
 		vec3 radiance = get_specular_radiance(this_s, test_s);// * max(0.5, dot(test_s.nor, this_s.nor));
 		float p_hat = luminance(radiance);
-		p_hat /= get_pdf(this_s, test_s);
+		//p_hat /= get_pdf(this_s, test_s);
 		reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
 		radiance *= reservoir.w;
 		outColor.rgb += radiance;

@@ -1,6 +1,4 @@
-#define metallic 0.0
-#define roughness 0.1
-
+/*
 float get_exit_distance(vec2 pos, vec2 dir){
 
 	vec2 dist = vec2(9999999.0, 99999999.0);
@@ -15,175 +13,7 @@ float get_exit_distance(vec2 pos, vec2 dir){
     //The minimum positive distance is the one at which the ray exits the screen
     return min(dist.x, dist.y);
 }
-
-bool get_exit_distance_from_frustum(in vec3 ro, in vec3 rd, in vec4 plane, out float t){
-
-  // Calculate the denominator of the intersection formula
-  float denom = dot(plane.xyz, rd);
-
-  if (abs(denom) > 1e-6) {  // Avoid division by zero
-    // Calculate the intersection parameter t
-    t = -(dot(plane.xyz, ro) + plane.w) / denom;
-
-    if (t >= 0.0) {  // Check if the intersection is in the direction of the ray
-        return true;
-    } else {
-      return false;
-    }
-  } 
-
-  return false;  // Ray is parallel to the plane
-}
-
-vec4 get_sample_uv_or_dir(in sample this_s, inout uint seed){
-
-	//if(max(0.0, (this_s.rou-0.5)*2) > RandomFloat01(seed)){
-	//	vec2 rand_coordinates = vec2(RandomFloat01(seed), RandomFloat01(seed));
-	//	return RandomFloat01(seed) > 0.5 ? rand_coordinates*texDim : -rand_coordinates*mapSize;
-	//}
-
-  	float resolution  = 0.5;//mix(0.1, 2., RandomFloat01(seed));// 0.1;
-  	int   steps       = 4;
-
- 	vec4 startView = vec4(this_s.pos, 1);
-
- 	bool valid = false;
- 	vec3 pivot;
- 	for(int k = 0; k < 10; k++){
-			pivot = normalize(this_s.ref + randomUnitVector3(seed)*this_s.rou*this_s.rou); //***pick a better sample distribution!!!
-			if( dot(pivot, this_s.nor) > 0 ){
-				valid = true;
-				break;
-			}
- 	}
- 	
- 	if(!valid) return vec4(0.0);
-
-	if(pivot.z > 0.999){
-	  //convert ray direction from view to world space
-	  pivot = (invV * vec4(pivot, 0)).xyz;
-	  return vec4(pivot, -1);
-	  //to texture space
-	  //vec2 frag = vec2(atan(pivot.z, pivot.x), asin(pivot.y));
-	  //frag *= vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
-	  //frag += 0.5;
-	  //frag *= mapSize;
-	  //return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
-	}
-
-	float t = 999999;
-	float test_t;
-	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_near, test_t) ? 		min(t, test_t) : t;
-	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_far, test_t) ? 		min(t, test_t) : t;
-	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_left, test_t) ? 		min(t, test_t) : t;
-	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_right, test_t) ? 	min(t, test_t) : t;
-	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_top, test_t) ? 		min(t, test_t) : t;
-	t = get_exit_distance_from_frustum(this_s.pos, pivot, jit_in.plane_bottom, test_t) ? 	min(t, test_t) : t;
-
-	vec4 depths;// = startView;
-	vec4 endView;
-	vec4 startFrag;
-	vec4 endFrag;
-
-  endView   = vec4(startView.xyz + pivot*t, 1);
-
-  startFrag    = startView;
-  startFrag.xy = this_s.uv;
-
-  endFrag      = endView;
-  endFrag      = projmat * endFrag;
-  endFrag.xy 	/= endFrag.w;
-  endFrag.xy   = endFrag.xy * 0.5 + 0.5;
-  endFrag.xy  *= texDim;
-
-  vec2 frag  = startFrag.xy;
-   //vec4   uv;
-   //uv.xy = frag/texDim;
-
-  float deltaX    = endFrag.x - startFrag.x;
-  float deltaY    = endFrag.y - startFrag.y;
-  float useX      = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
-  float delta     = mix(abs(deltaY), abs(deltaX), useX) * clamp(resolution, 0.0, 1.0);
-  vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.001);
-  frag += increment;// * (RandomFloat01(seed)*0.5) + increment*0.0001;
-
-  float search0 = 0;
-  float search1 = 0;
-
-  int hit0 = 0;
-  int hit1 = 0;
-
-  float viewDistance = startView.z;
-
-  float i = 0;
-
-  bool found = false;
-
-  for (i = 0; i < int(delta); i+=1) {
-    
-    	if(i >= int(delta)-1){
-    		//if the ray didn't hit any geometry, sample from the envionment map
-	
-    		//convert ray direction from view to world space
-    		return  vec4( (invV * vec4(pivot, 0)).xyz, -1);
-	
-    		//to texture space
-    		//frag = vec2(atan(pivot.z, pivot.x), asin(pivot.y));
-    		//frag *= vec2(-0.1591549431, 0.3183098862);//vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
-    		//frag += 0.5;
-    		//frag *= mapSize;
-    		//return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
-    	}
-    //uv.xy      = frag / texDim;
-
-    depths = texture(velTex, frag);
-
-    search1 = mix( (frag.y - startFrag.y) / deltaY, (frag.x - startFrag.x) / deltaX, useX );
-    search1 = clamp(search1, 0.0, 1.0);
-
-    viewDistance = (startView.z * endView.z) / mix(endView.z, startView.z, search1);
-    //depth        = positionTo.r - viewDistance;
-
-    if ( 	(depths.r >= viewDistance && viewDistance >= depths.g ) || 
-    			(depths.b >= viewDistance && viewDistance >= depths.a ) ){
-    //if(depth > 0 && depth < thickness){
-      hit0 = 1;
-      found = true;
-      break;
-    } else {
-      search0 = search1;
-    }
-    frag      += increment;
-  }
-
-  search1 = search0 + ((search1 - search0) / 2.0);// + (RandomFloat01(seed) - 0.5)*0.5;
-
-  steps *= hit0;
-
-  for (i = 0; i < steps; ++i) {
-    frag       = mix(startFrag.xy, endFrag.xy, search1);
-
-    //uv.xy      = frag / texDim;
-    depths = texelFetch(velTex, ivec2(frag));
-
-    viewDistance = (startView.z * endView.z) / mix(endView.z, startView.z, search1);
-    //depth        = positionTo.r - viewDistance;
-
-    if ( 	(depths.r > viewDistance && viewDistance > depths.g) || 
-    			(depths.b > viewDistance && viewDistance > depths.a) ){
-    //if(depth > 0 && depth < thickness){
-      hit1 = 1;
-      search1 = search0 + ((search1 - search0) / 2.0);
-    } else {
-      float temp = search1;
-      search1 = search0 + ((search1 - search0) / 2.0);
-      search0 = temp;
-    }
-  }
-
-  return vec4(frag,0,1);
-
-}
+*/
 
 vec2 cartesianToUv(vec3 cartesian) {
     float theta = atan(cartesian.y, cartesian.x)/TWOPI; // azimuthal angle
@@ -297,36 +127,9 @@ sample get_sample_dir_col_for_env_jittered(int index, inout uint seed){
 
 sample get_environment_sample(in vec3 candidate_dir, inout uint seed){
 	sample s;
-	s.col = texture(environmentMap, candidate_dir).rgb;
+	s.col = texture(environmentMap, (invV * vec4(candidate_dir, 0)).xyz).rgb;
 	s.nor = candidate_dir;
-	s.pos = s.nor;
-	return s;
-}
-
-sample get_sample(int index){
-
-	sample s;
-	vec2 uv = index2uv(index);
-	ivec2 iuv = ivec2(uv);
-	vec4 lookup0 = texelFetch(colTex, iuv);
-	vec4 lookup1 = texelFetch(norDepthTex, iuv);
-	vec4 lookup2 = texelFetch(velTex, iuv);
-	vec4 lookup3 = texelFetch(posTex, iuv);
-	vec4 lookup4 = texelFetch(albTex, iuv);
-	vec2 lookup5 = texelFetch(roughMetalTex, iuv).xy;
-	s.col = lookup0.rgb;
-	s.nor = lookup1.xyz;
-	s.vel = lookup2.xy;
-	s.pos = lookup3.xyz;
-	s.depth = lookup1.w;
-	s.index = index;
-	s.uv = uv;
-	s.alb = lookup4.rgb;
-	s.id = lookup4.w;
-	s.view = normalize(s.pos);
-	s.ref = reflect(s.view, s.nor);
-	s.rou = lookup5.x;//clamp(lookup5.x, 0.0, 0.3);
-	s.met = lookup5.y;
+	//s.pos = s.nor;
 	return s;
 }
 
@@ -487,7 +290,7 @@ vec4 updateReservoir(vec4 reservoir, float lightToSample, float weight, float c,
 bool background(in sample this_s){
 	return this_s.pos.x == 1.0 && this_s.pos.y == 1.0 && this_s.pos.z == 1.0;
 }
-
+/*
 bool visible(in sample this_s, in sample test_s, inout uint seed){
 	return true;
 	float num_iterations = 6;
@@ -496,7 +299,7 @@ bool visible(in sample this_s, in sample test_s, inout uint seed){
 	for(float i = start; i < 1; i += step){ //make a better tracing
 		vec2 test_uv = mix(this_s.uv, test_s.uv, vec2(i*i));
 		float expected_depth = (this_s.pos.z * test_s.pos.z) / mix(test_s.pos.z, this_s.pos.z, i*i);
-		vec4 sampled_depth = texelFetch(velTex, ivec2(test_uv));
+		vec4 sampled_depth = texelFetch(depthsTex, ivec2(test_uv));
     if ( 	(sampled_depth.r > expected_depth && expected_depth > sampled_depth.g) || 
     			(sampled_depth.b > expected_depth && expected_depth > sampled_depth.a) ){
     	return false;
@@ -504,7 +307,7 @@ bool visible(in sample this_s, in sample test_s, inout uint seed){
 	}
 	return true;
 }
-
+*/
 vec2 pos2uv(in vec3 p){
 
 	vec4 projP = projmat * vec4(p, 1);
@@ -512,7 +315,7 @@ vec2 pos2uv(in vec3 p){
 	return floor( ( textureMatrix0 * vec4(projP.xy,1,1) ).xy ) + 0.5;// * texDim;
 
 }
-
+/*
 bool visible_env(in sample this_s, in sample test_s, inout uint seed){
 
 	return true;
@@ -532,3 +335,4 @@ bool visible_env(in sample this_s, in sample test_s, inout uint seed){
 	}
 	return true;
 }
+*/

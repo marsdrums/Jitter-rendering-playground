@@ -208,9 +208,11 @@ vec2 get_sample_uv_for_env(inout uint seed, in vec3 nor){
 }
 */
 vec3 get_canidate_dir(inout uint seed, in vec3 nor){
-	vec3 wNor = (invV * vec4(nor, 0)).xyz;
+
 	vec3 rand_dir = randomUnitVector3(seed);
-	return dot(rand_dir, wNor) > 0.0 ? rand_dir : -rand_dir;
+	rand_dir = dot(rand_dir, nor) > 0.0 ? rand_dir : -rand_dir;
+	//return (invV * vec4(rand_dir, 0)).xyz;
+	return rand_dir;
 }
 
 bool valid_uv(in vec2 uv){
@@ -256,9 +258,9 @@ sample get_sample_pos_col(int index){
 
 sample get_environment_sample(in vec3 candidate_dir, inout uint seed){
 	sample s;
-	s.col = texture(environmentMap, candidate_dir).rgb;
+	s.col = texture(environmentMap, (invV * vec4(candidate_dir, 0)).xyz).rgb;
 	s.nor = candidate_dir;
-	s.pos = s.nor;
+	//s.pos = s.nor;
 	return s;
 }
 
