@@ -11,7 +11,8 @@ in jit_PerVertex {
 	flat vec4 plane_bottom;
 } jit_in;
 
-uniform sampler2DRect colTex, norDepthTex, velTex, posTex, reservoirTex, p_hatTex, albTex, environmentMap, roughMetalTex, stbn_uvec2Tex;
+uniform sampler2DRect colTex, norDepthTex, velTex, posTex, reservoirTex, p_hatTex, albTex, roughMetalTex, stbn_uvec2Tex;
+uniform samplerCube environmentMap;
 uniform int frame, num_samples;
 uniform vec2 texDim, mapSize;
 uniform mat4 prevMVP, invV, MV, MVP, VP, V, projmat, textureMatrix0;

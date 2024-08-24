@@ -52,7 +52,8 @@ in jit_PerVertex {
 
 layout (location = 0) out vec4 outColor;
 
-uniform samplerJit0 norDepthTex, envTex;
+uniform samplerJit0 norDepthTex;
+uniform samplerCube envTex;
 uniform vec2 mapSize;
 
 void main(void) {
@@ -63,13 +64,7 @@ void main(void) {
 		float F = pow(1.0 - cosine, 5.0);
 		outColor = vec4(0,0,0,F);
 	} else {
-
-		vec3 rayDir = normalize(jit_in.rayDir);
-	  	vec2 frag = vec2(atan(rayDir.z, rayDir.x), asin(rayDir.y));
-	  	frag *= vec2(-0.1591549431, 0.3183098862);
-	  	frag += 0.5;
-	  	frag *= mapSize;
-	  	outColor = vec4(texture(envTex, frag).rgb, 0);
+	  	outColor = vec4(texture(envTex, normalize(jit_in.rayDir)).rgb, 0);
 	}
 }
 ]]>

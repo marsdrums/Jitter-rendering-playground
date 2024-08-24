@@ -35,34 +35,40 @@ bool get_exit_distance_from_frustum(in vec3 ro, in vec3 rd, in vec4 plane, out f
   return false;  // Ray is parallel to the plane
 }
 
-vec2 get_sample_uv(in sample this_s, inout uint seed){
+vec4 get_sample_uv_or_dir(in sample this_s, inout uint seed){
 
-  	float resolution  = 0.5;
+	//if(max(0.0, (this_s.rou-0.5)*2) > RandomFloat01(seed)){
+	//	vec2 rand_coordinates = vec2(RandomFloat01(seed), RandomFloat01(seed));
+	//	return RandomFloat01(seed) > 0.5 ? rand_coordinates*texDim : -rand_coordinates*mapSize;
+	//}
+
+  	float resolution  = 0.5;//mix(0.1, 2., RandomFloat01(seed));// 0.1;
   	int   steps       = 4;
 
  	vec4 startView = vec4(this_s.pos, 1);
 
  	bool valid = false;
  	vec3 pivot;
- 	for(int k = 0; k < 20; k++){
-			pivot = normalize(this_s.ref + randomUnitVector3(seed)*this_s.rou*this_s.rou);
+ 	for(int k = 0; k < 10; k++){
+			pivot = normalize(this_s.ref + randomUnitVector3(seed)*this_s.rou*this_s.rou); //***pick a better sample distribution!!!
 			if( dot(pivot, this_s.nor) > 0 ){
 				valid = true;
 				break;
 			}
  	}
  	
- 	if(!valid) return vec2(-10000);
+ 	if(!valid) return vec4(0.0);
 
 	if(pivot.z > 0.999){
 	  //convert ray direction from view to world space
 	  pivot = (invV * vec4(pivot, 0)).xyz;
+	  return vec4(pivot, -1);
 	  //to texture space
-	  vec2 frag = vec2(atan(pivot.z, pivot.x), asin(pivot.y));
-	  frag *= vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
-	  frag += 0.5;
-	  frag *= mapSize;
-	  return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
+	  //vec2 frag = vec2(atan(pivot.z, pivot.x), asin(pivot.y));
+	  //frag *= vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
+	  //frag += 0.5;
+	  //frag *= mapSize;
+	  //return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
 	}
 
 	float t = 999999;
@@ -99,7 +105,7 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
   float useX      = abs(deltaX) >= abs(deltaY) ? 1.0 : 0.0;
   float delta     = mix(abs(deltaY), abs(deltaX), useX) * clamp(resolution, 0.0, 1.0);
   vec2  increment = vec2(deltaX, deltaY) / max(delta, 0.001);
-  frag += increment + increment * (RandomFloat01(seed)-0.5)*0.5;
+  frag += increment;// * (RandomFloat01(seed)*0.5) + increment*0.0001;
 
   float search0 = 0;
   float search1 = 0;
@@ -119,17 +125,17 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
     		//if the ray didn't hit any geometry, sample from the envionment map
 	
     		//convert ray direction from view to world space
-    		pivot = (invV * vec4(pivot, 0)).xyz;
+    		return  vec4( (invV * vec4(pivot, 0)).xyz, -1);
 	
     		//to texture space
-    		frag = vec2(atan(pivot.z, pivot.x), asin(pivot.y));
-    		frag *= vec2(-0.1591549431, 0.3183098862);//vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
-    		frag += 0.5;
-    		frag *= mapSize;
-    		return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
+    		//frag = vec2(atan(pivot.z, pivot.x), asin(pivot.y));
+    		//frag *= vec2(-0.1591549431, 0.3183098862);//vec2(-1/(2*M_PI), 1/M_PI); //to invert atan
+    		//frag += 0.5;
+    		//frag *= mapSize;
+    		//return -frag; //i use negative uv coordinates to instruct the following functions to take a sample from the env map
     	}
     //uv.xy      = frag / texDim;
-    
+
     depths = texture(velTex, frag);
 
     search1 = mix( (frag.y - startFrag.y) / deltaY, (frag.x - startFrag.x) / deltaX, useX );
@@ -175,7 +181,7 @@ vec2 get_sample_uv(in sample this_s, inout uint seed){
     }
   }
 
-  return frag;
+  return vec4(frag,0,1);
 
 }
 
@@ -275,7 +281,7 @@ sample get_sample_pos_col_from_uv(vec2 uv){
 	s.pos = lookup3.xyz;
 	return s;
 }
-
+/*
 sample get_sample_dir_col_for_env_jittered(int index, inout uint seed){
 
 	sample s;
@@ -285,6 +291,15 @@ sample get_sample_dir_col_for_env_jittered(int index, inout uint seed){
 	s.col = texture(environmentMap, jitter_uv).rgb;
 	s.nor = uv2dir(jitter_uv);
 	s.pos = s.nor; //use the position variable to pass the direction for reprojection
+	return s;
+}
+*/
+
+sample get_environment_sample(in vec3 candidate_dir, inout uint seed){
+	sample s;
+	s.col = texture(environmentMap, candidate_dir).rgb;
+	s.nor = candidate_dir;
+	s.pos = s.nor;
 	return s;
 }
 
@@ -450,15 +465,22 @@ vec3 get_radiance_for_env(in sample this_s, in sample test_s){
 	//return test_s.col;
 }
 
-vec4 updateReservoir(vec4 reservoir, float lightToSample, float weight, float c, inout uint seed)
+vec4 updateReservoir(vec4 reservoir, float lightToSample, float weight, float c, uint seed, in vec3 candidate_dir, out vec3 best_dir)
 {
+
 	// Algorithm 2 of ReSTIR paper
 	reservoir.x = reservoir.x + weight; // r.w_sum
 	reservoir.z = reservoir.z + c; // r.M
 	if (RandomFloat01(seed) < weight / reservoir.x) {
-		reservoir.y = lightToSample; // r.y
-	}
 
+		if(lightToSample >= 0){ //If the sample comes from the viewport
+			reservoir.y = lightToSample; // r.y
+		} 		
+		else{ //If the sample comes from the environment map
+			reservoir.y = -1;
+			best_dir = candidate_dir;
+		}
+	}	
 	return reservoir;
 }
 

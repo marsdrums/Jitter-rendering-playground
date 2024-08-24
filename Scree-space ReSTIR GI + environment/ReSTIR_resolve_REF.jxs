@@ -2,13 +2,14 @@
 	<description>Default Slab </description>
 	<param name="dummyTex" type="int" default="0" />
 	<param name="reservoirTex" type="int" default="1" filter="nearest" />
-	<param name="colTex" type="int" default="2" filter="nearest" />
-	<param name="norDepthTex" type="int" default="3" filter="nearest" />
-	<param name="velTex" type="int" default="4" filter="nearest" />
-	<param name="posTex" type="int" default="5" filter="nearest" />
-	<param name="albTex" type="int" default="6" filter="nearest" />	
-	<param name="environmentMap" type="int" default="7" filter="nearest"/>
-	<param name="roughMetalTex" type="int" default="8" filter="nearest" />
+	<param name="bestDirTex" type="int" default="2" filter="nearest" />
+	<param name="colTex" type="int" default="3" filter="nearest" />
+	<param name="norDepthTex" type="int" default="4" filter="nearest" />
+	<param name="velTex" type="int" default="5" filter="nearest" />
+	<param name="posTex" type="int" default="6" filter="nearest" />
+	<param name="albTex" type="int" default="7" filter="nearest" />	
+	<param name="environmentMap" type="int" default="8" filter="nearest"/>
+	<param name="roughMetalTex" type="int" default="9" filter="nearest" />
 	<param name="texDim" type="vec2" state="TEXDIM1" />
 	<param name="mapSize" type="vec2" state="TEXDIM7" />
 	<param name="prevMVP" type="mat4" state="PREV_MODELVIEW_PROJECTION_MATRIX" />
@@ -29,6 +30,7 @@
 	<language name="glsl" version="1.5">
 		<bind param="dummyTex" program="fp" />
 		<bind param="reservoirTex" program="fp" />
+		<bind param="bestDirTex" program="fp" />
 		<bind param="colTex" program="fp" />
 		<bind param="norDepthTex" program="fp" />
 		<bind param="velTex" program="fp" />
@@ -176,34 +178,31 @@ void main(void) {
 
 		test_s = get_sample_pos_col_full_res(int(reservoir.y));
 
-		if(true /*visible(this_s, test_s, seed)*/){
-			vec3 radiance = get_specular_radiance(this_s, test_s);// * max(0.5, dot(test_s.nor, this_s.nor));
-			float p_hat = luminance(radiance);
-			p_hat /= get_pdf(this_s, test_s);
-			reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
-			radiance *= reservoir.w;
-			outColor.rgb += radiance;
-		}		
+		vec3 radiance = get_specular_radiance(this_s, test_s);// * max(0.5, dot(test_s.nor, this_s.nor));
+		float p_hat = luminance(radiance);
+		p_hat /= get_pdf(this_s, test_s);
+		reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
+		radiance *= reservoir.w;
+		outColor.rgb += radiance;
+			
 
 	} else {
 
-		test_s = get_sample_dir_col_for_env_jittered(int(reservoir.y), seed);
+		vec3 best_dir = texelFetch(bestDirTex, ivec2(jit_in.uv)).xyz;
+		test_s = get_environment_sample(best_dir, seed);
 
 		//bool is_visible = (i % 3) == 0 ? visible_env(this_s, test_s, seed) : true;
-		if(true /*is_visible*/){
-			vec3 radiance = get_radiance_for_env(this_s, test_s);// * max(0.5, dot(test_s.nor, this_s.nor));
-			float p_hat = luminance(radiance);
-			//if(p_hat <= 0)continue;
-			reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
-			radiance *= reservoir.w;
-			outColor.rgb += radiance;
-		}
+
+		vec3 radiance = get_radiance_for_env(this_s, test_s);// * max(0.5, dot(test_s.nor, this_s.nor));
+		float p_hat = luminance(radiance);
+		//if(p_hat <= 0)continue;
+		reservoir.w = p_hat > 0 ? (1/max(0.0001, p_hat)) * (reservoir.x / max(reservoir.z, 0.0001)) : 0.0;
+		radiance *= reservoir.w;
+		outColor.rgb += radiance;
+
 	}
 
-	vec2 signs = mod(floor(jit_in.uv) + float(frame), vec2(2))*2 - 1;
 
-
-	float radius = 70*this_s.rou*this_s.rou + 0.2;
 	int NUM_SAMPLES = 1;//int(mix(1, 1, this_s.rou*this_s.rou));
 	float weight = 1;
 
@@ -219,12 +218,15 @@ void main(void) {
 	for(int i = NUM_SAMPLES; i >= 0; i--){
 		bool valid_uv = false;
 		ivec2 randUV;
+		ivec2 randUVfull;
 		for(int i = 0; i < 1; i++){ //search for valid uvs (not outside the viewport);
 
+			float radius = 70*this_s.rou*this_s.rou + 0.2;//i == 0 ? 4 : 70*this_s.rou*this_s.rou + 0.2;
 			float rand_radius = sqrt(RandomFloat01(seed));
    			float rand_angle = RandomFloat01(seed)*TWOPI;
    			vec3 disk = vec3(cos(rand_angle), sin(rand_angle), 0)*rand_radius*radius;///(-this_s.pos.z);
-   			disk.xy = abs(disk.xy) * signs; //apply bayer sampling
+   			//vec2 signs = mod(floor(jit_in.uv) + float(frame*NUM_SAMPLES) + float(i), vec2(2))*2 - 1;
+   			//disk.xy = abs(disk.xy) * signs; //apply bayer sampling
    			//disk = TBN * disk;
    			//disk += this_s.pos;
    			//vec4 proj_disk = projmat * vec4(disk, 1);
@@ -233,8 +235,9 @@ void main(void) {
 			//randUV = ivec2(proj_disk_uv);//get_random_uv(seed, radius);
 			//randUV = get_random_uv(seed, radius);
 			randUV = ivec2(jit_in.uv + disk.xy);
+			randUVfull = ivec2((jit_in.uv + disk.xy)*2);
 
-			bool background = texelFetch(norDepthTex, randUV*2).w == 1;
+			bool background = texelFetch(norDepthTex, randUVfull).w == 1;
 			if(randUV.x >= 0 && randUV.y >= 0 && randUV.x < texDim.x && randUV.y < texDim.y && !background){
 				valid_uv = true;
 				break;
@@ -244,8 +247,8 @@ void main(void) {
 		if(!valid_uv) continue;
 		
 		vec4 reservoir = texelFetch(reservoirTex, randUV);
-		float angle_diff = dot(this_s.nor, texelFetch(norDepthTex, randUV*2).xyz);
-		float sample_depth = texelFetch(norDepthTex, randUV*2).w;
+		float angle_diff = dot(this_s.nor, texelFetch(norDepthTex, randUVfull).xyz);
+		float sample_depth = texelFetch(norDepthTex, randUVfull).w;
 		if(angle_diff < 1 - this_s.rou) continue;
 
 		if(reservoir.y >= 0){ //if the sample is from the viewport
@@ -266,7 +269,8 @@ void main(void) {
 
 		} else {
 
-			test_s = get_sample_dir_col_for_env_jittered(int(reservoir.y), seed);
+			vec3 best_dir = texelFetch(bestDirTex, randUV).xyz;
+			test_s = get_environment_sample(best_dir, seed);
 
 			//bool is_visible = (i % 3) == 0 ? visible_env(this_s, test_s, seed) : true;
 			bool is_visible = true;//visible_env(this_s, test_s, seed);
