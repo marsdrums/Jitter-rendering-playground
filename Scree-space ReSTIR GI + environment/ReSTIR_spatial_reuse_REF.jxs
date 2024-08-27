@@ -101,8 +101,7 @@ void main(void) {
 #version 330 core
 
 layout (location = 0) out vec4 outReservoir;
-layout (location = 1) out vec4 outPhat;
-layout (location = 2) out vec4 outBestWpos;
+layout (location = 1) out vec4 outBestWpos;
 
 uint get_rng_seed(){
 	return uint(jit_in.uv.x*371783) + uint(jit_in.uv.y*288472) + uint(frame*377112 + num_samples);
@@ -296,7 +295,6 @@ void main(void) {
 	}
 
 	outReservoir = reservoir;
-	outPhat = vec4(p_hat, best_dir);
 
 
 }
