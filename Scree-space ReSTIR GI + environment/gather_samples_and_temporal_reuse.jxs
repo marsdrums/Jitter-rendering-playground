@@ -148,7 +148,6 @@ in jit_PerVertex {
 
 layout (location = 0) out vec4 outReservoir;
 layout (location = 1) out vec4 outPhat;
-//layout (location = 2) out vec4 outTest;
 
 uniform sampler2DRect colTex, norDepthTex, depthLayersTex, posTex, prev_reservoirTex, prev_best_wposTex, albTex, velTex;
 uniform samplerCube environmentMap;
